@@ -5,92 +5,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DocRep — Repository Resilience Workbench</title>
   <style>
-    /* ── Design Tokens ─────────────────────────────────────────────── */
+    /* ─── Tokens ───────────────────────────────────────────────────── */
     :root {
-      --bg:           #f6f6f7;
-      --surface:      #ffffff;
-      --surface-2:    #f0f0f2;
-      --border:       #e2e2e6;
-      --border-faint: #ebebee;
-      --text:         #0c0c0d;
-      --text-2:       #5a5a6e;
-      --text-3:       #9898a8;
-      --accent:       #1a1a2e;
-      --accent-hover: #16213e;
-      --blue:         #2563eb;
-      --blue-dim:     rgba(37,99,235,.10);
-      --green:        #16a34a;
-      --green-dim:    rgba(22,163,74,.10);
-      --amber:        #b45309;
-      --amber-dim:    rgba(180,83,9,.10);
-      --red:          #dc2626;
-      --red-dim:      rgba(220,38,38,.10);
-      --teal:         #0891b2;
-      --teal-dim:     rgba(8,145,178,.10);
-      --font:         -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
-      --mono:         ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      --r:            6px;
-      --r-lg:         10px;
+      --bg:        #f9f8f6;
+      --surface:   #ffffff;
+      --surface2:  #f4f3f0;
+      --border:    #e8e6e1;
+      --text:      #1a1814;
+      --text2:     #6b6760;
+      --text3:     #b0aea8;
+      --gold:      #c9a84c;
+      --gold-dim:  rgba(201,168,76,.10);
+      --green:     #3d9970;
+      --green-dim: rgba(61,153,112,.10);
+      --red:       #c0392b;
+      --red-dim:   rgba(192,57,43,.10);
+      --amber:     #d4860a;
+      --amber-dim: rgba(212,134,10,.10);
+      --teal:      #1a7a8a;
+      --teal-dim:  rgba(26,122,138,.10);
+      --font: "Georgia", "Times New Roman", serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      --r: 4px;
+      --r-lg: 8px;
     }
-
     [data-theme="dark"] {
-      --bg:           #0c0c0d;
-      --surface:      #141415;
-      --surface-2:    #1c1c1e;
-      --border:       #252528;
-      --border-faint: #1e1e21;
-      --text:         #f0f0f2;
-      --text-2:       #8e8e9a;
-      --text-3:       #52525e;
-      --accent:       #f0f0f2;
-      --accent-hover: #d0d0da;
-      --blue:         #4f8ef7;
-      --blue-dim:     rgba(79,142,247,.12);
-      --green:        #22c55e;
-      --green-dim:    rgba(34,197,94,.12);
-      --amber:        #f59e0b;
-      --amber-dim:    rgba(245,158,11,.12);
-      --red:          #ef4444;
-      --red-dim:      rgba(239,68,68,.12);
-      --teal:         #22d3ee;
-      --teal-dim:     rgba(34,211,238,.12);
+      --bg:        #111009;
+      --surface:   #19180f;
+      --surface2:  #211f14;
+      --border:    #2e2c1e;
+      --text:      #f0ece2;
+      --text2:     #9a9580;
+      --text3:     #5a5648;
+      --gold:      #d4a847;
+      --gold-dim:  rgba(212,168,71,.12);
+      --green:     #4aab82;
+      --green-dim: rgba(74,171,130,.12);
+      --red:       #e05a4a;
+      --red-dim:   rgba(224,90,74,.12);
+      --amber:     #e8a030;
+      --amber-dim: rgba(232,160,48,.12);
+      --teal:      #30a0b0;
+      --teal-dim:  rgba(48,160,176,.12);
     }
 
-    /* ── Reset ─────────────────────────────────────────────────────── */
+    /* ─── Reset ────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { overflow-x: hidden; }
     body {
-      font-family: var(--font);
-      font-size: 14px;
-      line-height: 1.55;
+      font-family: var(--sans);
+      font-size: 13.5px;
+      line-height: 1.6;
       background: var(--bg);
       color: var(--text);
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
-      transition: background .2s, color .2s;
+      overflow-x: hidden;
+      transition: background .25s, color .25s;
     }
 
-    /* ── Header ────────────────────────────────────────────────────── */
+    /* ─── Layout cap ────────────────────────────────────────────────── */
+    .wrap {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ─── Header ────────────────────────────────────────────────────── */
     header {
       position: sticky;
       top: 0;
-      z-index: 60;
+      z-index: 100;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(12px);
     }
     .nav {
-      max-width: 1280px;
-      margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 32px;
-      height: 56px;
-      gap: 24px;
+      height: 52px;
+      gap: 16px;
     }
 
-    /* Brand */
     .brand {
       display: flex;
       align-items: center;
@@ -99,54 +97,61 @@
       flex-shrink: 0;
     }
     .brand-mark {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       background: var(--text);
       color: var(--surface);
-      border-radius: 5px;
+      border-radius: 3px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 900;
-      font-size: 13px;
-      letter-spacing: -.5px;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: .5px;
       flex-shrink: 0;
     }
     .brand-name {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
-      letter-spacing: -.03em;
+      letter-spacing: -.02em;
       color: var(--text);
     }
-    .brand-ver {
+    .brand-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--border);
+    }
+    .brand-sub {
       font-size: 11px;
-      color: var(--text-3);
-      font-weight: 500;
-      letter-spacing: .03em;
+      color: var(--text3);
+      letter-spacing: .04em;
     }
 
-    /* Status pills */
+    /* Status */
     .status-row {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      min-width: 0;
+      overflow: hidden;
     }
-    .pill {
+    .s-pill {
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 500;
-      padding: 3px 9px;
+      padding: 2px 8px;
       border-radius: 99px;
       border: 1px solid var(--border);
-      background: var(--surface-2);
-      color: var(--text-2);
+      background: var(--surface2);
+      color: var(--text3);
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .dot {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       flex-shrink: 0;
     }
@@ -154,171 +159,202 @@
     .dot-warn { background: var(--amber); }
     .dot-err  { background: var(--red); }
 
-    /* Nav right actions */
-    .nav-actions {
+    /* Header right */
+    .nav-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-shrink: 0;
     }
 
-    /* ── Buttons ────────────────────────────────────────────────────── */
+    /* ─── Buttons ────────────────────────────────────────────────────── */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 5px;
-      font-family: var(--font);
-      font-size: 13px;
+      font-family: var(--sans);
+      font-size: 12.5px;
       font-weight: 500;
-      padding: 7px 15px;
+      padding: 6px 14px;
       border-radius: var(--r);
       cursor: pointer;
       border: 1px solid transparent;
       text-decoration: none;
       white-space: nowrap;
-      transition: background .15s, border-color .15s, color .15s, opacity .15s;
+      transition: all .15s;
+      letter-spacing: .01em;
     }
-    .btn:disabled { opacity: .45; pointer-events: none; }
-    .btn-solid {
-      background: var(--text);
-      color: var(--surface);
-      border-color: var(--text);
+    .btn:disabled { opacity: .4; pointer-events: none; }
+
+    .btn-primary {
+      background: var(--gold);
+      color: #fff;
+      border-color: var(--gold);
     }
-    .btn-solid:hover { opacity: .82; }
-    .btn-ghost {
+    .btn-primary:hover { opacity: .88; }
+
+    .btn-outline {
       background: transparent;
-      color: var(--text-2);
+      color: var(--text2);
       border-color: var(--border);
     }
-    .btn-ghost:hover { background: var(--surface-2); color: var(--text); border-color: var(--text-3); }
-    .btn-sm { padding: 4px 11px; font-size: 12px; }
-    .btn-danger { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+    .btn-outline:hover { background: var(--surface2); color: var(--text); }
+
+    .btn-sm { padding: 4px 10px; font-size: 11.5px; }
+
+    .btn-danger {
+      background: var(--red-dim);
+      color: var(--red);
+      border-color: var(--red);
+    }
     .btn-danger:hover { background: var(--red); color: #fff; }
 
-    /* ── Dropdown ───────────────────────────────────────────────────── */
+    /* ─── Dropdown ───────────────────────────────────────────────────── */
     .dropdown { position: relative; }
     .dropdown-menu {
       display: none;
       position: absolute;
       right: 0;
       top: calc(100% + 6px);
-      min-width: 210px;
+      min-width: 200px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      box-shadow: 0 8px 24px rgba(0,0,0,.12);
-      z-index: 200;
+      box-shadow: 0 12px 32px rgba(0,0,0,.12);
+      z-index: 999;
       overflow: hidden;
       padding: 4px;
     }
     .dropdown:hover .dropdown-menu,
     .dropdown:focus-within .dropdown-menu { display: block; }
-    .dropdown-item {
+    .d-item {
       display: flex;
       align-items: center;
       gap: 9px;
-      padding: 9px 12px;
-      font-size: 13px;
-      color: var(--text-2);
+      padding: 8px 12px;
+      font-size: 12.5px;
+      color: var(--text2);
       text-decoration: none;
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: var(--r);
       transition: background .1s, color .1s;
     }
-    .dropdown-item:hover { background: var(--surface-2); color: var(--text); }
-    .dropdown-item-icon { width: 16px; text-align: center; font-size: 13px; }
+    .d-item:hover { background: var(--surface2); color: var(--text); }
 
-    /* ── Main layout ────────────────────────────────────────────────── */
-    main {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 32px 32px 80px;
+    /* ─── Theme toggle ───────────────────────────────────────────────── */
+    .theme-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text3);
+      border-radius: var(--r);
+      padding: 5px 9px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .15s;
     }
+    .theme-btn:hover { background: var(--surface2); color: var(--text); }
 
-    /* ── Section spacing ────────────────────────────────────────────── */
-    .section { margin-bottom: 28px; }
+    /* ─── Main ───────────────────────────────────────────────────────── */
+    main { padding: 28px 0 72px; }
 
-    /* ── Control workspace ──────────────────────────────────────────── */
-    .workspace {
+    /* ─── Page title bar ─────────────────────────────────────────────── */
+    .page-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .page-title {
+      font-family: var(--font);
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -.01em;
+    }
+    .page-title span { color: var(--gold); }
+
+    /* ─── Control card ───────────────────────────────────────────────── */
+    .control-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      padding: 24px;
-      margin-bottom: 24px;
+      padding: 20px;
+      margin-bottom: 20px;
     }
-    .workspace-row {
-      display: flex;
-      align-items: flex-end;
-      gap: 16px;
-      flex-wrap: wrap;
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 14px;
+      align-items: end;
     }
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .field-grow { flex: 1; min-width: 260px; }
-    .label {
-      font-size: 11px;
-      font-weight: 600;
+
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field-label {
+      font-size: 10.5px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .07em;
-      color: var(--text-3);
+      letter-spacing: .1em;
+      color: var(--text3);
     }
-    .input {
-      width: 100%;
-      padding: 8px 12px;
-      font-size: 13px;
+    .field-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .input-text {
+      flex: 1;
+      padding: 7px 11px;
+      font-size: 12.5px;
       font-family: var(--mono);
       border: 1px solid var(--border);
       border-radius: var(--r);
-      background: var(--surface-2);
+      background: var(--surface2);
       color: var(--text);
       outline: none;
+      min-width: 0;
       transition: border-color .15s;
     }
-    .input:focus { border-color: var(--blue); }
+    .input-text:focus { border-color: var(--gold); }
 
-    /* Toggles */
-    .toggle-row {
+    .toggle-group {
       display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 6px;
     }
     .toggle {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       cursor: pointer;
+      font-size: 12px;
+      color: var(--text2);
       user-select: none;
-      font-size: 13px;
-      color: var(--text-2);
     }
     .toggle input[type="checkbox"] {
-      width: 14px;
-      height: 14px;
-      accent-color: var(--blue);
+      width: 13px;
+      height: 13px;
+      accent-color: var(--gold);
       cursor: pointer;
+      flex-shrink: 0;
     }
-    .toggle strong { color: var(--text); font-weight: 600; }
 
-    .divider { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
-
-    .action-bar {
+    .btn-stack {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      gap: 6px;
     }
+    .btn-row { display: flex; gap: 6px; }
 
-    /* ── Progress ───────────────────────────────────────────────────── */
-    .progress-panel {
+    /* ─── Progress ───────────────────────────────────────────────────── */
+    .progress-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      padding: 20px 24px;
-      margin-bottom: 24px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
       display: none;
     }
     .progress-top {
@@ -327,84 +363,95 @@
       align-items: center;
       margin-bottom: 10px;
     }
-    .progress-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .progress-label { font-size: 12.5px; font-weight: 600; color: var(--text); }
     .progress-track {
-      height: 3px;
+      height: 2px;
       background: var(--border);
       border-radius: 99px;
       overflow: hidden;
-      margin-bottom: 8px;
+      margin-bottom: 7px;
     }
     .progress-fill {
       height: 100%;
-      background: var(--blue);
+      background: var(--gold);
       width: 0%;
-      border-radius: 99px;
       transition: width .3s ease;
     }
-    .progress-sub { font-size: 12px; color: var(--text-3); }
+    .progress-sub { font-size: 11.5px; color: var(--text3); }
 
-    /* ── KPI Grid ───────────────────────────────────────────────────── */
-    .kpi-grid {
+    /* ─── KPI strip ──────────────────────────────────────────────────── */
+    .kpi-strip {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      background: var(--border);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
       overflow: hidden;
-      margin-bottom: 28px;
+      background: var(--border);
+      gap: 1px;
+      margin-bottom: 24px;
     }
     .kpi {
       background: var(--surface);
-      padding: 22px 24px;
+      padding: 18px 20px;
     }
-    .kpi-label {
-      font-size: 11px;
-      font-weight: 600;
+    .kpi-lbl {
+      font-size: 10px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .07em;
-      color: var(--text-3);
+      letter-spacing: .1em;
+      color: var(--text3);
       margin-bottom: 8px;
     }
-    .kpi-value {
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: -.04em;
+    .kpi-val {
+      font-family: var(--font);
+      font-size: 24px;
+      font-weight: 400;
       color: var(--text);
-      margin-bottom: 4px;
+      letter-spacing: -.02em;
       line-height: 1;
+      margin-bottom: 5px;
     }
-    .kpi-sub { font-size: 12px; color: var(--text-3); }
+    .kpi-sub { font-size: 11px; color: var(--text3); }
 
-    /* ── Tab bar ────────────────────────────────────────────────────── */
+    /* ─── Tabs ───────────────────────────────────────────────────────── */
     .tab-bar {
       display: flex;
-      gap: 2px;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+      gap: 0;
       overflow-x: auto;
       scrollbar-width: none;
     }
     .tab-bar::-webkit-scrollbar { display: none; }
     .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 14px;
+      font-family: var(--sans);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text3);
+      cursor: pointer;
+      white-space: nowrap;
+      margin-bottom: -1px;
+      transition: color .15s, border-color .15s;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 9px 14px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-3);
-      background: transparent;
-      border: none;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: color .15s;
     }
-    .tab-btn:hover { color: var(--text-2); }
-    .tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
+    .tab-btn:hover { color: var(--text2); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); font-weight: 600; }
+
+    .count-chip {
+      font-size: 10px;
+      font-weight: 700;
+      background: var(--gold-dim);
+      color: var(--gold);
+      padding: 1px 6px;
+      border-radius: 99px;
+      border: 1px solid rgba(201,168,76,.25);
+    }
 
     .tab-pane { display: none; }
     .tab-pane.active {
@@ -412,656 +459,648 @@
       animation: fadeUp .15s ease;
     }
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(4px); }
+      from { opacity: 0; transform: translateY(3px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Count badge in tab */
-    .count-chip {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      color: var(--text-3);
-      font-size: 10.5px;
-      font-weight: 600;
-      padding: 1px 6px;
-      border-radius: 99px;
-    }
-
-    /* ── Toolbar (filter row) ────────────────────────────────────────── */
+    /* ─── Toolbar (filter row) ───────────────────────────────────────── */
     .toolbar {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
-    .search-input {
-      padding: 7px 12px;
-      font-size: 13px;
+    .search-box {
+      padding: 6px 11px;
+      font-size: 12.5px;
       border: 1px solid var(--border);
       border-radius: var(--r);
-      background: var(--surface-2);
+      background: var(--surface);
       color: var(--text);
       outline: none;
-      width: 240px;
+      flex: 1;
+      min-width: 160px;
+      max-width: 260px;
       transition: border-color .15s;
     }
-    .search-input:focus { border-color: var(--blue); }
-    .filter-row { display: flex; gap: 8px; }
+    .search-box:focus { border-color: var(--gold); }
+    .filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
     .sel {
-      padding: 7px 10px;
-      font-size: 12px;
+      padding: 6px 9px;
+      font-size: 11.5px;
       border: 1px solid var(--border);
       border-radius: var(--r);
-      background: var(--surface-2);
-      color: var(--text-2);
+      background: var(--surface);
+      color: var(--text2);
       outline: none;
       cursor: pointer;
     }
 
-    /* ── Finding cards ──────────────────────────────────────────────── */
-    .card-stack { display: flex; flex-direction: column; gap: 12px; }
+    /* ─── Card list ──────────────────────────────────────────────────── */
+    .card-list { display: flex; flex-direction: column; gap: 10px; }
+
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
-      padding: 20px 22px;
+      padding: 16px 18px;
       transition: border-color .15s;
     }
-    .card:hover { border-color: var(--text-3); }
+    .card:hover { border-color: var(--gold); }
+
     .card-top {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 8px;
+      gap: 10px;
+      margin-bottom: 6px;
     }
     .card-meta {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       flex-wrap: wrap;
     }
-    .card-id {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-3);
-    }
     .card-title {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 600;
       color: var(--text);
     }
+    .card-id {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
     .card-body {
-      font-size: 13px;
-      color: var(--text-2);
-      line-height: 1.6;
-      margin-bottom: 12px;
+      font-size: 12.5px;
+      color: var(--text2);
+      line-height: 1.65;
+      margin-bottom: 10px;
     }
 
-    /* ── Badges ─────────────────────────────────────────────────────── */
+    /* ─── Badges ─────────────────────────────────────────────────────── */
     .badge {
       display: inline-flex;
       align-items: center;
-      padding: 2px 8px;
-      border-radius: 99px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .02em;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: .05em;
     }
-    .badge-critical, .badge-high { background: var(--red-dim);   color: var(--red);   }
-    .badge-medium               { background: var(--amber-dim); color: var(--amber); }
-    .badge-low                  { background: var(--teal-dim);  color: var(--teal);  }
-    .badge-category {
-      background: var(--surface-2);
-      color: var(--text-3);
+    .badge-critical,
+    .badge-high  { background: var(--red-dim);   color: var(--red);   }
+    .badge-medium { background: var(--amber-dim); color: var(--amber); }
+    .badge-low    { background: var(--teal-dim);  color: var(--teal);  }
+    .badge-cat {
+      background: var(--surface2);
+      color: var(--text3);
       border: 1px solid var(--border);
       text-transform: none;
       font-weight: 500;
+      font-size: 10.5px;
+      border-radius: 3px;
     }
-    .badge-ok  { background: var(--green-dim); color: var(--green); }
-    .badge-err { background: var(--red-dim);   color: var(--red);   }
+    .badge-ok   { background: var(--green-dim); color: var(--green); }
+    .badge-err  { background: var(--red-dim);   color: var(--red);   }
     .badge-warn { background: var(--amber-dim); color: var(--amber); }
     .badge-info { background: var(--teal-dim);  color: var(--teal);  }
 
-    /* ── Evidence block ─────────────────────────────────────────────── */
+    /* ─── Evidence block ─────────────────────────────────────────────── */
     .ev {
-      background: var(--surface-2);
-      border: 1px solid var(--border-faint);
+      background: var(--surface2);
+      border: 1px solid var(--border);
       border-radius: var(--r);
-      padding: 11px 14px;
-      margin-top: 10px;
+      padding: 10px 13px;
+      margin-top: 8px;
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 11.5px;
       overflow-x: auto;
     }
     .ev-header {
       display: flex;
       justify-content: space-between;
-      font-family: var(--font);
-      font-size: 11px;
-      color: var(--text-3);
-      margin-bottom: 6px;
+      font-family: var(--sans);
+      font-size: 10.5px;
+      color: var(--text3);
+      margin-bottom: 5px;
     }
 
-    /* AI rec chip */
-    .rec-chip {
-      background: var(--blue-dim);
-      border-left: 2px solid var(--blue);
+    /* AI chip */
+    .ai-chip {
+      border-left: 2px solid var(--gold);
+      background: var(--gold-dim);
       border-radius: 0 var(--r) var(--r) 0;
-      padding: 10px 14px;
-      margin-top: 12px;
-      font-size: 12.5px;
-      color: var(--text-2);
+      padding: 9px 13px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text2);
       line-height: 1.55;
     }
-    .rec-chip strong { color: var(--text); }
+    .ai-chip strong { color: var(--text); }
+
     code {
       font-family: var(--mono);
-      font-size: .9em;
-      background: var(--surface-2);
+      font-size: .88em;
+      background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 3px;
+      border-radius: 2px;
       padding: 1px 5px;
+      word-break: break-all;
     }
 
-    /* ── Challenge cards ────────────────────────────────────────────── */
-    .challenge-section {
-      background: var(--surface-2);
+    /* ─── Challenge sections ─────────────────────────────────────────── */
+    .chal-section {
+      background: var(--surface2);
       border-radius: var(--r);
-      padding: 14px 16px;
-      margin-top: 12px;
-      font-size: 13px;
+      padding: 11px 14px;
+      margin-top: 10px;
+      font-size: 12.5px;
     }
-    .challenge-section h4 {
-      font-size: 11px;
+    .chal-section h4 {
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--text-3);
-      margin-bottom: 6px;
+      letter-spacing: .1em;
+      color: var(--text3);
+      margin-bottom: 5px;
     }
-    .challenge-section ul {
-      padding-left: 18px;
-      color: var(--text-2);
-      line-height: 1.6;
-    }
-    .challenge-section p { color: var(--text-2); margin-top: 4px; }
+    .chal-section ul { padding-left: 16px; color: var(--text2); line-height: 1.65; }
+    .chal-section p  { color: var(--text2); margin-top: 2px; }
 
-    /* ── Table ──────────────────────────────────────────────────────── */
+    /* ─── Table ──────────────────────────────────────────────────────── */
     .table-wrap {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
       overflow-x: auto;
     }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px; }
     th {
-      padding: 11px 18px;
-      font-size: 11px;
+      padding: 10px 16px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .07em;
-      color: var(--text-3);
-      background: var(--surface-2);
+      letter-spacing: .1em;
+      color: var(--text3);
+      background: var(--surface2);
       border-bottom: 1px solid var(--border);
+      white-space: nowrap;
     }
     td {
-      padding: 13px 18px;
-      border-bottom: 1px solid var(--border-faint);
-      color: var(--text-2);
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text2);
       vertical-align: middle;
     }
     td strong { color: var(--text); }
     tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: var(--surface-2); }
+    tbody tr:hover td { background: var(--surface2); }
 
-    /* ── Empty state ────────────────────────────────────────────────── */
-    .empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 56px 24px;
-      color: var(--text-3);
-      text-align: center;
-      gap: 6px;
-    }
-    .empty strong { font-size: 14px; color: var(--text-2); }
-    .empty p { font-size: 13px; }
-
-    /* ── Info callout ───────────────────────────────────────────────── */
+    /* ─── Callout ────────────────────────────────────────────────────── */
     .callout {
-      background: var(--blue-dim);
-      border: 1px solid rgba(79,142,247,.2);
+      background: var(--gold-dim);
+      border: 1px solid rgba(201,168,76,.22);
       border-radius: var(--r);
-      padding: 14px 16px;
-      font-size: 13px;
-      color: var(--text-2);
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-    .callout code { background: rgba(79,142,247,.15); border-color: rgba(79,142,247,.3); }
-
-    /* ── Capsule pre ────────────────────────────────────────────────── */
-    .capsule-pre {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 16px;
-      font-family: var(--mono);
-      font-size: 12px;
-      max-height: 580px;
-      overflow-y: auto;
-      color: var(--text-2);
+      padding: 12px 15px;
+      font-size: 12.5px;
+      color: var(--text2);
+      margin-bottom: 16px;
       line-height: 1.6;
     }
 
-    /* ── Capsule tab header ─────────────────────────────────────────── */
-    .capsule-bar {
+    /* ─── Empty state ────────────────────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--text3);
+    }
+    .empty strong { display: block; font-size: 13px; color: var(--text2); margin-bottom: 5px; }
+    .empty p { font-size: 12px; }
+
+    /* ─── Capsule tab ────────────────────────────────────────────────── */
+    .cap-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
       flex-wrap: wrap;
       gap: 10px;
+      margin-bottom: 12px;
     }
-    .capsule-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .cap-bar-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .capsule-pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      max-height: 560px;
+      overflow-y: auto;
+      color: var(--text2);
+      line-height: 1.65;
+    }
 
-    /* ── Debt card ──────────────────────────────────────────────────── */
-    .debt-card { margin-bottom: 0; }
-    .debt-card .card-top { margin-bottom: 6px; }
+    /* ─── Limits list ────────────────────────────────────────────────── */
+    .limits-card { margin-top: 0; }
+    .limits-card .section-head {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text3);
+      margin-bottom: 10px;
+    }
+    .limits-card ul {
+      padding-left: 16px;
+      font-size: 12.5px;
+      color: var(--text2);
+      line-height: 1.85;
+    }
 
-    /* ── Responsive ─────────────────────────────────────────────────── */
-    @media (max-width: 900px) {
-      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-      .nav { padding: 0 16px; }
-      main { padding: 20px 16px 64px; }
+    /* ─── Decorative gold rule ───────────────────────────────────────── */
+    .gold-rule {
+      height: 1px;
+      background: linear-gradient(to right, var(--gold), transparent);
+      margin-bottom: 24px;
+      opacity: .4;
+    }
+
+    /* ─── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 860px) {
+      .control-grid { grid-template-columns: 1fr; }
+      .kpi-strip { grid-template-columns: repeat(2, 1fr); }
       .status-row { display: none; }
+      .wrap { padding: 0 14px; }
     }
-    @media (max-width: 600px) {
-      .kpi-grid { grid-template-columns: 1fr; }
-      .workspace-row { flex-direction: column; align-items: stretch; }
-      .action-bar { flex-wrap: wrap; }
-      .toggle-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+    @media (max-width: 520px) {
+      .kpi-strip { grid-template-columns: 1fr 1fr; }
+      .page-title { font-size: 18px; }
+      .btn-row { flex-wrap: wrap; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ─── NAV ──────────────────────────────────────────────────────── -->
+  <!-- ─── HEADER ───────────────────────────────────────────────────── -->
   <header>
-    <nav class="nav">
+    <div class="wrap">
+      <nav class="nav">
 
-      <!-- Brand -->
-      <a class="brand" href="#">
-        <div class="brand-mark">DR</div>
-        <span class="brand-name">DocRep</span>
-        <span class="brand-ver">v0.2</span>
-      </a>
+        <a class="brand" href="#">
+          <div class="brand-mark">DR</div>
+          <span class="brand-name">DocRep</span>
+          <div class="brand-sep"></div>
+          <span class="brand-sub">v0.2</span>
+        </a>
 
-      <!-- System status pills -->
-      <div class="status-row">
-        <div class="pill" id="pillOllama">
-          <span class="dot dot-warn" id="dotOllama"></span>
-          <span id="textOllama">Ollama</span>
-        </div>
-        <div class="pill" id="pillModel">
-          <span class="dot dot-warn" id="dotModel"></span>
-          <span id="textModel">Model</span>
-        </div>
-        <div class="pill" id="pillHermes">
-          <span class="dot dot-ok" id="dotHermes"></span>
-          <span id="textHermes">Hermes</span>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="nav-actions">
-        <div class="dropdown">
-          <button class="btn btn-ghost btn-sm" id="btnDownloadReport">
-            ↓ Download Report
-          </button>
-          <div class="dropdown-menu">
-            <a class="dropdown-item" href="/api/capsule.html" download="docrep_report.html">
-              <span class="dropdown-item-icon">⬡</span> Interactive HTML
-            </a>
-            <a class="dropdown-item" href="/api/capsule.md" download="capsule.md">
-              <span class="dropdown-item-icon">≡</span> Markdown Capsule
-            </a>
-            <a class="dropdown-item" href="/api/capsule.json" download="capsule.json">
-              <span class="dropdown-item-icon">{}</span> Machine JSON
-            </a>
+        <div class="status-row">
+          <div class="s-pill" id="pillOllama">
+            <span class="dot dot-warn" id="dotOllama"></span>
+            <span id="textOllama">Ollama</span>
+          </div>
+          <div class="s-pill" id="pillModel">
+            <span class="dot dot-warn" id="dotModel"></span>
+            <span id="textModel">Model</span>
+          </div>
+          <div class="s-pill" id="pillHermes">
+            <span class="dot dot-ok"  id="dotHermes"></span>
+            <span id="textHermes">Hermes</span>
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">◐</button>
-      </div>
 
-    </nav>
+        <div class="nav-right">
+          <div class="dropdown">
+            <button class="btn btn-outline btn-sm" id="btnDownloadReport">↓ Export</button>
+            <div class="dropdown-menu">
+              <a class="d-item" href="/api/capsule.html" download="docrep_report.html">
+                <span>⬡</span> Interactive HTML
+              </a>
+              <a class="d-item" href="/api/capsule.md" download="capsule.md">
+                <span>≡</span> Markdown Capsule
+              </a>
+              <a class="d-item" href="/api/capsule.json" download="capsule.json">
+                <span>{}</span> Machine JSON
+              </a>
+            </div>
+          </div>
+          <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">◐</button>
+        </div>
+
+      </nav>
+    </div>
   </header>
 
   <!-- ─── MAIN ─────────────────────────────────────────────────────── -->
   <main>
+    <div class="wrap">
 
-    <!-- Control workspace -->
-    <div class="workspace">
-      <div class="workspace-row">
+      <!-- Page heading -->
+      <div class="page-title-row">
+        <h1 class="page-title">Repository <span>Resilience</span> Workbench</h1>
+      </div>
+      <div class="gold-rule"></div>
 
-        <!-- Repo path -->
-        <div class="field field-grow">
-          <span class="label">Target Repository</span>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <input type="text" id="repoPathInput" class="input"
-              value="target_repo/linkwatch" placeholder="/path/to/repo">
-            <button class="btn btn-ghost btn-sm" onclick="setRepo('target_repo/linkwatch')">LinkWatch</button>
+      <!-- Control workspace -->
+      <div class="control-card">
+        <div class="control-grid">
+
+          <!-- Repo input -->
+          <div class="field">
+            <span class="field-label">Target Repository</span>
+            <div class="field-row">
+              <input type="text" id="repoPathInput" class="input-text"
+                value="target_repo/linkwatch" placeholder="/path/to/repo">
+              <button class="btn btn-outline btn-sm"
+                onclick="setRepo('target_repo/linkwatch')">LinkWatch</button>
+            </div>
+          </div>
+
+          <!-- Toggles -->
+          <div class="field">
+            <span class="field-label">Options</span>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" id="deepToggle">
+                <span>Deep AI Mode</span>
+              </label>
+              <label class="toggle">
+                <input type="checkbox" id="noAiToggle">
+                <span>Deterministic Only</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="field">
+            <span class="field-label">Run</span>
+            <div class="btn-stack">
+              <button class="btn btn-primary" id="btnRunAudit"
+                onclick="startAudit('run')">Run Full Audit</button>
+              <div class="btn-row">
+                <button class="btn btn-outline btn-sm"
+                  onclick="startAudit('scan')">Scan</button>
+                <button class="btn btn-outline btn-sm"
+                  onclick="startAudit('verify')">Verify</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-card" id="progressSection">
+        <div class="progress-top">
+          <span class="progress-label" id="progressStepTitle">Running resilience audit…</span>
+          <button class="btn btn-danger btn-sm" onclick="cancelJob()">Cancel</button>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBarFill"></div>
+        </div>
+        <div class="progress-sub" id="progressDetail">Initialising background worker…</div>
+      </div>
+
+      <!-- KPI strip -->
+      <div class="kpi-strip">
+        <div class="kpi">
+          <div class="kpi-lbl">Repository</div>
+          <div class="kpi-val" id="kpiRepoName">linkwatch</div>
+          <div class="kpi-sub" id="kpiRepoDetail">Loading…</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl">Findings</div>
+          <div class="kpi-val" id="kpiFindingsCount">—</div>
+          <div class="kpi-sub" id="kpiFindingsDetail">Run audit to evaluate</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl">Sandbox Checks</div>
+          <div class="kpi-val" id="kpiVerifCount" style="color:var(--green)">—</div>
+          <div class="kpi-sub" id="kpiVerifDetail">Isolated sandbox runner</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl">Verification Debt</div>
+          <div class="kpi-val" id="kpiDebtCount">—</div>
+          <div class="kpi-sub" id="kpiDebtDetail">Items requiring review</div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn active" onclick="switchTab('tab-findings')">
+          Findings <span class="count-chip" id="tabCountFindings">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-ai')">AI Challenges</button>
+        <button class="tab-btn" onclick="switchTab('tab-blast')">Blast Radius</button>
+        <button class="tab-btn" onclick="switchTab('tab-verif')">Verification</button>
+        <button class="tab-btn" onclick="switchTab('tab-debt')">Debt &amp; Limits</button>
+        <button class="tab-btn" onclick="switchTab('tab-capsule')">Exit Capsule</button>
+      </div>
+
+      <!-- ── TAB 1: FINDINGS ────────────────────────────────────────── -->
+      <div class="tab-pane active" id="tab-findings">
+        <div class="toolbar">
+          <input type="text" class="search-box" id="findingSearch"
+            placeholder="Search packages, files, categories…"
+            oninput="filterFindings()">
+          <div class="filter-row">
+            <select id="severityFilter" class="sel" onchange="filterFindings()">
+              <option value="ALL">All Severities</option>
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select id="categoryFilter" class="sel" onchange="filterFindings()">
+              <option value="ALL">All Categories</option>
+              <option value="migration_tripwire">Migration Tripwires</option>
+              <option value="ghost_dependency">Ghost Dependencies</option>
+              <option value="manifest_conflict">Manifest Conflicts</option>
+              <option value="private_api">Private APIs</option>
+            </select>
           </div>
         </div>
-
-        <div class="divider"></div>
-
-        <!-- Toggles -->
-        <div class="field">
-          <span class="label">Options</span>
-          <div class="toggle-row">
-            <label class="toggle">
-              <input type="checkbox" id="deepToggle">
-              <strong>Deep AI</strong>
-            </label>
-            <label class="toggle">
-              <input type="checkbox" id="noAiToggle">
-              <strong>No AI</strong>
-            </label>
+        <div class="card-list" id="findingsList">
+          <div class="empty">
+            <strong>No findings loaded</strong>
+            <p>Click <em>Run Full Audit</em> to scan the repository.</p>
           </div>
         </div>
+      </div>
 
-        <div class="divider"></div>
-
-        <!-- Actions -->
-        <div class="field">
-          <span class="label">Run</span>
-          <div class="action-bar">
-            <button class="btn btn-solid" id="btnRunAudit" onclick="startAudit('run')">
-              Run Full Audit
-            </button>
-            <button class="btn btn-ghost btn-sm" onclick="startAudit('scan')">Scan</button>
-            <button class="btn btn-ghost btn-sm" onclick="startAudit('verify')">Verify</button>
+      <!-- ── TAB 2: AI CHALLENGES ───────────────────────────────────── -->
+      <div class="tab-pane" id="tab-ai">
+        <div class="callout">
+          <strong>Model:</strong>&nbsp;<code id="modelIdentityLabel">qwen2.5-coder:1.5b via Ollama</code>
+          &nbsp;— All suggestions are probabilistic AI outputs challenged by assumptions,
+          counterarguments and sandbox checks.
+        </div>
+        <div class="card-list" id="challengesList">
+          <div class="empty">
+            <strong>No AI recommendations loaded</strong>
+            <p>Run Full Audit with AI enabled.</p>
           </div>
         </div>
+      </div>
 
-      </div>
-    </div>
-
-    <!-- Progress panel -->
-    <div class="progress-panel" id="progressSection">
-      <div class="progress-top">
-        <span class="progress-label" id="progressStepTitle">Running resilience audit…</span>
-        <button class="btn btn-sm btn-danger" onclick="cancelJob()">Cancel</button>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progressBarFill"></div>
-      </div>
-      <div class="progress-sub" id="progressDetail">Initialising background worker…</div>
-    </div>
-
-    <!-- KPI bar -->
-    <div class="kpi-grid">
-      <div class="kpi">
-        <div class="kpi-label">Repository</div>
-        <div class="kpi-value" id="kpiRepoName">linkwatch</div>
-        <div class="kpi-sub" id="kpiRepoDetail">Loading…</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Findings</div>
-        <div class="kpi-value" id="kpiFindingsCount">—</div>
-        <div class="kpi-sub" id="kpiFindingsDetail">Run audit to evaluate</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Sandbox Checks</div>
-        <div class="kpi-value" id="kpiVerifCount" style="color:var(--green)">—</div>
-        <div class="kpi-sub" id="kpiVerifDetail">Isolated sandbox runner</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Verification Debt</div>
-        <div class="kpi-value" id="kpiDebtCount">—</div>
-        <div class="kpi-sub" id="kpiDebtDetail">Items requiring maintainer test</div>
-      </div>
-    </div>
-
-    <!-- Tab navigation -->
-    <div class="tab-bar" role="tablist">
-      <button class="tab-btn active" onclick="switchTab('tab-findings')">
-        Findings <span class="count-chip" id="tabCountFindings">0</span>
-      </button>
-      <button class="tab-btn" onclick="switchTab('tab-ai')">AI Challenges</button>
-      <button class="tab-btn" onclick="switchTab('tab-blast')">Blast Radius</button>
-      <button class="tab-btn" onclick="switchTab('tab-verif')">Verification</button>
-      <button class="tab-btn" onclick="switchTab('tab-debt')">Debt &amp; Limits</button>
-      <button class="tab-btn" onclick="switchTab('tab-capsule')">Exit Capsule</button>
-    </div>
-
-    <!-- ── TAB 1: FINDINGS ─────────────────────────────────────────── -->
-    <div class="tab-pane active" id="tab-findings">
-      <div class="toolbar">
-        <input type="text" class="search-input" id="findingSearch"
-          placeholder="Search packages, files, categories…" oninput="filterFindings()">
-        <div class="filter-row">
-          <select id="severityFilter" class="sel" onchange="filterFindings()">
-            <option value="ALL">All Severities</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-          <select id="categoryFilter" class="sel" onchange="filterFindings()">
-            <option value="ALL">All Categories</option>
-            <option value="migration_tripwire">Migration Tripwires</option>
-            <option value="ghost_dependency">Ghost Dependencies</option>
-            <option value="manifest_conflict">Manifest Conflicts</option>
-            <option value="private_api">Private APIs</option>
-          </select>
+      <!-- ── TAB 3: BLAST RADIUS ────────────────────────────────────── -->
+      <div class="tab-pane" id="tab-blast">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Dependency</th>
+                <th>Risk</th>
+                <th>Direct Imports</th>
+                <th>Affected Tests</th>
+                <th>Summary</th>
+              </tr>
+            </thead>
+            <tbody id="blastTableBody">
+              <tr><td colspan="5" class="empty" style="padding:40px">No blast radius data available.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <div class="card-stack" id="findingsList">
-        <div class="empty">
-          <strong>No findings loaded</strong>
-          <p>Click <em>Run Full Audit</em> to scan AST and evaluate resilience rules.</p>
+
+      <!-- ── TAB 4: VERIFICATION ────────────────────────────────────── -->
+      <div class="tab-pane" id="tab-verif">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Check ID</th>
+                <th>Target</th>
+                <th>Status</th>
+                <th style="text-align:center">Exit</th>
+                <th style="text-align:right">Duration</th>
+                <th style="text-align:center">Sandbox</th>
+              </tr>
+            </thead>
+            <tbody id="verifTableBody">
+              <tr><td colspan="6" class="empty" style="padding:40px">No verification results available.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
 
-    <!-- ── TAB 2: AI CHALLENGES ───────────────────────────────────── -->
-    <div class="tab-pane" id="tab-ai">
-      <div class="callout">
-        <strong>Model:</strong> <code id="modelIdentityLabel">qwen2.5-coder:1.5b via Ollama</code>
-        &nbsp;—&nbsp;All recommendations are probabilistic AI suggestions, challenged by assumptions,
-        counterarguments and sandbox checks.
-      </div>
-      <div class="card-stack" id="challengesList">
-        <div class="empty">
-          <strong>No AI recommendations loaded</strong>
-          <p>Run Full Audit with AI enabled.</p>
+      <!-- ── TAB 5: DEBT & LIMITS ───────────────────────────────────── -->
+      <div class="tab-pane" id="tab-debt">
+        <div class="card-list" id="debtList" style="margin-bottom:14px;"></div>
+        <div class="card limits-card">
+          <div class="section-head">Scanner &amp; Environment Limitations</div>
+          <ul id="limitsList">
+            <li>Static AST parsing cannot detect dynamic runtime imports
+              (e.g.&nbsp;<code>importlib.import_module</code>).</li>
+            <li>Closed-source transitive dependencies require clean container testing.</li>
+            <li>AI recommendations are probabilistic suggestions — verify against
+              repository tests before adoption.</li>
+          </ul>
         </div>
       </div>
-    </div>
 
-    <!-- ── TAB 3: BLAST RADIUS ────────────────────────────────────── -->
-    <div class="tab-pane" id="tab-blast">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Dependency</th>
-              <th>Risk</th>
-              <th>Direct Imports</th>
-              <th>Affected Tests</th>
-              <th>Summary</th>
-            </tr>
-          </thead>
-          <tbody id="blastTableBody">
-            <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-3)">No blast radius data available.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ── TAB 4: VERIFICATION ────────────────────────────────────── -->
-    <div class="tab-pane" id="tab-verif">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Check ID</th>
-              <th>Target</th>
-              <th>Status</th>
-              <th style="text-align:center">Exit Code</th>
-              <th style="text-align:right">Duration</th>
-              <th style="text-align:center">Sandbox</th>
-            </tr>
-          </thead>
-          <tbody id="verifTableBody">
-            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">No verification results available.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ── TAB 5: DEBT & LIMITS ───────────────────────────────────── -->
-    <div class="tab-pane" id="tab-debt">
-      <div class="card-stack" id="debtList" style="margin-bottom:20px;"></div>
-      <div class="card">
-        <div style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:12px; text-transform:uppercase; letter-spacing:.06em; font-size:11px; color:var(--text-3);">Scanner &amp; Environment Limitations</div>
-        <ul id="limitsList" style="padding-left:18px; font-size:13px; color:var(--text-2); line-height:1.8;">
-          <li>Static AST parsing cannot detect dynamic runtime imports (e.g. <code>importlib.import_module</code>).</li>
-          <li>Closed-source transitive dependencies require clean container testing.</li>
-          <li>AI recommendations are probabilistic suggestions — verify against repository tests before adoption.</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- ── TAB 6: EXIT CAPSULE ────────────────────────────────────── -->
-    <div class="tab-pane" id="tab-capsule">
-      <div class="capsule-bar">
-        <span class="capsule-title">Dependency Exit Capsule — Proof-Carrying Artifact</span>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-ghost btn-sm" onclick="copyMarkdown()">Copy Markdown</button>
-          <a class="btn btn-solid btn-sm" href="/api/capsule.md" download="capsule.md">↓ Download .md</a>
+      <!-- ── TAB 6: EXIT CAPSULE ────────────────────────────────────── -->
+      <div class="tab-pane" id="tab-capsule">
+        <div class="cap-bar">
+          <span class="cap-bar-title">Dependency Exit Capsule — Proof-Carrying Artifact</span>
+          <div style="display:flex;gap:7px;">
+            <button class="btn btn-outline btn-sm" onclick="copyMarkdown()">Copy</button>
+            <a class="btn btn-primary btn-sm" href="/api/capsule.md"
+              download="capsule.md">↓ Download .md</a>
+          </div>
         </div>
+        <pre class="capsule-pre" id="capsuleMdView">Run analysis to generate the exit capsule.</pre>
       </div>
-      <pre class="capsule-pre" id="capsuleMdView">Run analysis to generate and inspect capsule.md here.</pre>
-    </div>
 
+    </div><!-- /.wrap -->
   </main>
 
   <script>
     let pollInterval = null;
     let currentResults = null;
 
-    // Theme Switcher
+    /* Theme */
     function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
+      const cur  = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = cur === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('docrep-theme', next);
     }
-    const savedTheme = localStorage.getItem('docrep-theme');
-    if (savedTheme) {
-      document.documentElement.setAttribute('data-theme', savedTheme);
+    const saved = localStorage.getItem('docrep-theme');
+    if (saved) {
+      document.documentElement.setAttribute('data-theme', saved);
     } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       document.documentElement.setAttribute('data-theme', 'dark');
     }
 
-    // Tab Switching
+    /* Tabs */
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-      const target = document.getElementById(tabId);
-      if (target) target.classList.add('active');
-      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
-      if (activeBtn) activeBtn.classList.add('active');
+      const t = document.getElementById(tabId);
+      if (t) t.classList.add('active');
+      const b = Array.from(document.querySelectorAll('.tab-btn'))
+        .find(x => x.getAttribute('onclick')?.includes(tabId));
+      if (b) b.classList.add('active');
     }
 
-    function setRepo(p) {
-      document.getElementById('repoPathInput').value = p;
-    }
+    function setRepo(p) { document.getElementById('repoPathInput').value = p; }
 
-    // Refresh Runtime Status
+    /* Status */
     async function refreshStatus() {
       try {
-        const res = await fetch('/api/status');
-        const data = await res.json();
+        const d = await (await fetch('/api/status')).json();
 
-        // Ollama
-        const dotO = document.getElementById('dotOllama');
-        const txtO = document.getElementById('textOllama');
-        if (data.ollama.running) {
-          dotO.className = 'dot dot-ok';
-          txtO.textContent = 'Ollama';
-        } else {
-          dotO.className = 'dot dot-err';
-          txtO.textContent = 'Ollama Offline';
-        }
+        const dO = document.getElementById('dotOllama');
+        const tO = document.getElementById('textOllama');
+        dO.className = d.ollama.running ? 'dot dot-ok' : 'dot dot-err';
+        tO.textContent = d.ollama.running ? 'Ollama' : 'Ollama Offline';
 
-        // Model
-        const dotM = document.getElementById('dotModel');
-        const txtM = document.getElementById('textModel');
-        if (data.model.ready) {
-          dotM.className = 'dot dot-ok';
-          txtM.textContent = data.model.name;
-        } else {
-          dotM.className = 'dot dot-warn';
-          txtM.textContent = 'Model Missing';
-        }
+        const dM = document.getElementById('dotModel');
+        const tM = document.getElementById('textModel');
+        dM.className = d.model.ready ? 'dot dot-ok' : 'dot dot-warn';
+        tM.textContent = d.model.ready ? d.model.name : 'Model Missing';
 
-        // Hermes
-        const dotH = document.getElementById('dotHermes');
-        const txtH = document.getElementById('textHermes');
-        if (data.hermes.found) {
-          dotH.className = 'dot dot-ok';
-          txtH.textContent = `Hermes ${data.hermes.version || ''}`.trim();
-        } else {
-          dotH.className = 'dot dot-ok';
-          txtH.textContent = 'Hermes';
-        }
-      } catch (e) {
-        console.error('Failed to load status', e);
-      }
+        const dH = document.getElementById('dotHermes');
+        const tH = document.getElementById('textHermes');
+        dH.className = 'dot dot-ok';
+        tH.textContent = d.hermes.found ? `Hermes ${d.hermes.version || ''}`.trim() : 'Hermes';
+      } catch (e) { console.error('Status error', e); }
     }
     refreshStatus();
 
-    // Start Audit Job
+    /* Start audit */
     async function startAudit(action = 'run') {
       const repoPath = document.getElementById('repoPathInput').value.trim();
-      const deep = document.getElementById('deepToggle').checked;
-      const noAi = document.getElementById('noAiToggle').checked;
-
-      if (!repoPath) {
-        alert('Please enter a target repository directory path.');
-        return;
-      }
+      const deep     = document.getElementById('deepToggle').checked;
+      const noAi     = document.getElementById('noAiToggle').checked;
+      if (!repoPath) { alert('Enter a target repository path.'); return; }
 
       document.getElementById('btnRunAudit').disabled = true;
       document.getElementById('progressSection').style.display = 'block';
-      document.getElementById('progressBarFill').style.width = '10%';
-      document.getElementById('progressStepTitle').textContent = 'Starting resilience audit…';
-      document.getElementById('progressDetail').textContent = 'Initialising background worker…';
+      document.getElementById('progressBarFill').style.width   = '10%';
+      document.getElementById('progressStepTitle').textContent  = 'Starting audit…';
+      document.getElementById('progressDetail').textContent     = 'Initialising worker…';
 
       try {
-        const res = await fetch('/api/run', {
+        const r = await fetch('/api/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ repo_path: repoPath, action, deep, no_ai: noAi })
         });
-        const data = await res.json();
-        if (!res.ok) {
-          alert(data.error || 'Failed to start audit.');
+        const d = await r.json();
+        if (!r.ok) {
+          alert(d.error || 'Failed to start audit.');
           document.getElementById('btnRunAudit').disabled = false;
           document.getElementById('progressSection').style.display = 'none';
           return;
         }
-
         startPolling();
-      } catch (err) {
+      } catch (e) {
         alert('Network error connecting to DocRep server.');
         document.getElementById('btnRunAudit').disabled = false;
         document.getElementById('progressSection').style.display = 'none';
@@ -1072,12 +1111,11 @@
       if (pollInterval) clearInterval(pollInterval);
       pollInterval = setInterval(async () => {
         try {
-          const res = await fetch('/api/job');
-          const job = await res.json();
-
+          const job = await (await fetch('/api/job')).json();
           document.getElementById('progressBarFill').style.width = `${job.progress_pct}%`;
           document.getElementById('progressStepTitle').textContent = job.current_step;
-          document.getElementById('progressDetail').textContent = `${job.status.toUpperCase()} — ${job.progress_pct}%`;
+          document.getElementById('progressDetail').textContent =
+            `${job.status.toUpperCase()} — ${job.progress_pct}%`;
 
           if (job.status === 'completed') {
             clearInterval(pollInterval);
@@ -1093,278 +1131,232 @@
             document.getElementById('btnRunAudit').disabled = false;
             document.getElementById('progressSection').style.display = 'none';
           }
-        } catch (err) {
-          console.error('Poll error', err);
-        }
+        } catch (e) { console.error('Poll error', e); }
       }, 750);
     }
 
     async function cancelJob() {
-      try {
-        await fetch('/api/cancel', { method: 'POST' });
-      } catch (e) {
-        console.error('Cancel failed', e);
-      }
+      try { await fetch('/api/cancel', { method: 'POST' }); }
+      catch (e) { console.error('Cancel failed', e); }
     }
 
-    // Fetch Completed Results
     async function fetchResults() {
       try {
-        const res = await fetch('/api/results');
-        if (!res.ok) return;
-        const data = await res.json();
-        currentResults = data;
-        renderResults(data);
-      } catch (e) {
-        console.error('Error fetching results', e);
-      }
+        const r = await fetch('/api/results');
+        if (!r.ok) return;
+        const d = await r.json();
+        currentResults = d;
+        renderResults(d);
+      } catch (e) { console.error('Fetch results error', e); }
     }
 
     function renderResults(data) {
-      const cap = data.capsule;
-      if (!cap) return;
+      const cap    = data.capsule; if (!cap) return;
+      const meta   = cap.metadata || {};
+      const findings    = cap.findings || [];
+      const challenges  = cap.recommendation_challenges || [];
+      const blast       = cap.blast_radii || [];
+      const verifs      = cap.verifications || [];
+      const debt        = cap.verification_debt_details || [];
+      const limits      = cap.limitations || [];
 
-      const meta = cap.metadata || {};
-      const findings = cap.findings || [];
-      const challenges = cap.recommendation_challenges || [];
-      const blast = cap.blast_radii || [];
-      const verifs = cap.verifications || [];
-      const debt = cap.verification_debt_details || [];
-      const limits = cap.limitations || [];
+      document.getElementById('kpiRepoName').textContent    = meta.repo_name || 'linkwatch';
+      document.getElementById('kpiRepoDetail').textContent  =
+        `${meta.source_files_count || 10} files · ${meta.manifests_found?.length || 2} manifests`;
 
-      // Update KPIs
-      document.getElementById('kpiRepoName').textContent = meta.repo_name || 'linkwatch';
-      document.getElementById('kpiRepoDetail').textContent = `${meta.source_files_count || 10} files · ${meta.manifests_found?.length || 2} manifests · Python ${meta.python_version_detected || '3.12'}`;
-
-      document.getElementById('kpiFindingsCount').textContent = findings.length;
-      document.getElementById('tabCountFindings').textContent = findings.length;
-      const crit = findings.filter(f => f.severity === 'critical').length;
-      const high = findings.filter(f => f.severity === 'high').length;
-      const med  = findings.filter(f => f.severity === 'medium').length;
-      document.getElementById('kpiFindingsDetail').innerHTML = `<span style="color:var(--red)">${crit} Critical</span> &nbsp;${high} High &nbsp;${med} Medium`;
+      document.getElementById('kpiFindingsCount').textContent   = findings.length;
+      document.getElementById('tabCountFindings').textContent   = findings.length;
+      const cr = findings.filter(f => f.severity === 'critical').length;
+      const hi = findings.filter(f => f.severity === 'high').length;
+      const md = findings.filter(f => f.severity === 'medium').length;
+      document.getElementById('kpiFindingsDetail').innerHTML =
+        `<span style="color:var(--red)">${cr} Crit</span> · ${hi} High · ${md} Med`;
 
       const pass = verifs.filter(v => v.status === 'verified').length;
-      document.getElementById('kpiVerifCount').textContent = `${pass} / ${verifs.length}`;
+      document.getElementById('kpiVerifCount').textContent  = `${pass} / ${verifs.length}`;
       document.getElementById('kpiVerifDetail').textContent = 'Passed in isolated sandbox';
 
-      document.getElementById('kpiDebtCount').textContent = debt.length;
-      document.getElementById('kpiDebtDetail').textContent = debt.length === 0 ? 'No unverified items' : 'Items require maintainer test';
+      document.getElementById('kpiDebtCount').textContent  = debt.length;
+      document.getElementById('kpiDebtDetail').textContent =
+        debt.length === 0 ? 'No unverified items' : 'Items need maintainer test';
 
-      if (cap.model_info?.model_name) {
-        document.getElementById('modelIdentityLabel').textContent = `${cap.model_info.model_name} via ${cap.model_info.mode}`;
-      }
+      if (cap.model_info?.model_name)
+        document.getElementById('modelIdentityLabel').textContent =
+          `${cap.model_info.model_name} via ${cap.model_info.mode}`;
 
       renderFindingsList(findings, cap.recommendations || []);
       renderChallenges(challenges);
       renderBlast(blast);
       renderVerifications(verifs);
       renderDebtAndLimits(debt, limits);
-
-      if (data.capsule_md) {
+      if (data.capsule_md)
         document.getElementById('capsuleMdView').textContent = data.capsule_md;
-      }
     }
 
     function renderFindingsList(findings, recs) {
-      const container = document.getElementById('findingsList');
+      const el = document.getElementById('findingsList');
       if (!findings.length) {
-        container.innerHTML = '<div class="empty"><strong>No findings identified.</strong></div>';
+        el.innerHTML = '<div class="empty"><strong>No findings identified.</strong></div>';
         return;
       }
-
-      let html = '';
-      findings.forEach(f => {
-        const matchingRec = recs.find(r => r.finding_id === f.id);
-        let evHtml = '';
-        if (f.evidence && f.evidence.length > 0) {
-          f.evidence.forEach(ev => {
-            evHtml += `
-            <div class="ev">
-              <div class="ev-header">
-                <span><strong>${ev.file_path}</strong> · Line ${ev.line_start || 1}</span>
-                <span>${ev.source_type}</span>
-              </div>
-              <pre><code>${escapeHtml(ev.content_snippet || '')}</code></pre>
-            </div>`;
-          });
-        }
-
-        let recHtml = '';
-        if (matchingRec) {
-          recHtml = `
-          <div class="rec-chip">
-            <strong>AI Action:</strong> ${matchingRec.suggested_action.toUpperCase()}
-            ${matchingRec.target_replacement ? `→ <code>${matchingRec.target_replacement}</code>` : ''}
-            <div style="margin-top:4px; color:var(--text-3);">${escapeHtml(matchingRec.rationale)}</div>
-          </div>`;
-        }
-
-        html += `
-        <div class="card finding-item" data-severity="${f.severity}" data-category="${f.category}" data-search="${escapeHtml(f.package_name || '')} ${escapeHtml(f.title)} ${escapeHtml(f.explanation)}">
+      el.innerHTML = findings.map(f => {
+        const rec = recs.find(r => r.finding_id === f.id);
+        const evHtml = (f.evidence || []).map(ev => `
+          <div class="ev">
+            <div class="ev-header">
+              <span><strong>${ev.file_path}</strong> · Line ${ev.line_start || 1}</span>
+              <span>${ev.source_type}</span>
+            </div>
+            <pre><code>${escapeHtml(ev.content_snippet || '')}</code></pre>
+          </div>`).join('');
+        const recHtml = rec ? `
+          <div class="ai-chip">
+            <strong>AI:</strong> ${rec.suggested_action.toUpperCase()}
+            ${rec.target_replacement ? `→ <code>${rec.target_replacement}</code>` : ''}
+            <div style="margin-top:3px;color:var(--text3)">${escapeHtml(rec.rationale)}</div>
+          </div>` : '';
+        return `
+        <div class="card finding-item"
+          data-severity="${f.severity}"
+          data-category="${f.category}"
+          data-search="${escapeHtml(f.package_name||'')} ${escapeHtml(f.title)} ${escapeHtml(f.explanation)}">
           <div class="card-top">
             <div class="card-meta">
               <span class="badge badge-${f.severity}">${f.severity}</span>
-              <span class="badge badge-category">${f.category}</span>
-              <span class="card-title">${escapeHtml(f.package_name || f.id)}: ${escapeHtml(f.title)}</span>
+              <span class="badge badge-cat">${f.category}</span>
+              <span class="card-title">${escapeHtml(f.package_name||f.id)}: ${escapeHtml(f.title)}</span>
             </div>
             <span class="card-id">${f.id}</span>
           </div>
           <div class="card-body">${escapeHtml(f.explanation)}</div>
-          ${evHtml}
-          ${recHtml}
+          ${evHtml}${recHtml}
         </div>`;
-      });
-
-      container.innerHTML = html;
+      }).join('');
     }
 
     function renderChallenges(challenges) {
-      const container = document.getElementById('challengesList');
+      const el = document.getElementById('challengesList');
       if (!challenges.length) {
-        container.innerHTML = '<div class="empty"><strong>No recommendation challenges available.</strong></div>';
+        el.innerHTML = '<div class="empty"><strong>No recommendation challenges available.</strong></div>';
         return;
       }
-
-      let html = '';
-      challenges.forEach(ch => {
-        const assLi = (ch.assumptions || []).map(a => `<li>${escapeHtml(a)}</li>`).join('');
-        const cntLi = (ch.counterarguments || []).map(c => `<li>${escapeHtml(c)}</li>`).join('');
-        const statusBadge = ch.check_result === 'VERIFIED'
-          ? '<span class="badge badge-ok">Verified</span>'
-          : '<span class="badge badge-warn">' + escapeHtml(ch.check_result) + '</span>';
-
-        html += `
+      el.innerHTML = challenges.map(ch => {
+        const ass = (ch.assumptions || []).map(a => `<li>${escapeHtml(a)}</li>`).join('');
+        const cnt = (ch.counterarguments || []).map(c => `<li>${escapeHtml(c)}</li>`).join('');
+        const badge = ch.check_result === 'VERIFIED'
+          ? `<span class="badge badge-ok">Verified</span>`
+          : `<span class="badge badge-warn">${escapeHtml(ch.check_result)}</span>`;
+        return `
         <div class="card">
           <div class="card-top">
             <div class="card-meta">
               <span class="card-title">Challenge — ${escapeHtml(ch.package_name)}</span>
-              <span class="badge badge-category">${ch.recommendation_id}</span>
+              <span class="badge badge-cat">${ch.recommendation_id}</span>
             </div>
-            ${statusBadge}
+            ${badge}
           </div>
-          <div class="challenge-section">
-            <h4>Assumptions</h4>
-            <ul>${assLi || '<li>Standard API parity assumed.</li>'}</ul>
-          </div>
-          <div class="challenge-section">
-            <h4>Counterarguments &amp; Risks</h4>
-            <ul>${cntLi || '<li>Migration requires testing.</li>'}</ul>
-          </div>
-          <div class="challenge-section">
-            <h4>Disproving Evidence</h4>
-            <p>${escapeHtml(ch.disproving_evidence)}</p>
-          </div>
-          <div class="challenge-section">
-            <h4>Required Check</h4>
-            <p><code>${escapeHtml(ch.verification_check_needed)}</code></p>
-          </div>
+          <div class="chal-section"><h4>Assumptions</h4>
+            <ul>${ass || '<li>Standard API parity assumed.</li>'}</ul></div>
+          <div class="chal-section"><h4>Counterarguments &amp; Risks</h4>
+            <ul>${cnt || '<li>Migration requires testing.</li>'}</ul></div>
+          <div class="chal-section"><h4>Disproving Evidence</h4>
+            <p>${escapeHtml(ch.disproving_evidence)}</p></div>
+          <div class="chal-section"><h4>Required Check</h4>
+            <p><code>${escapeHtml(ch.verification_check_needed)}</code></p></div>
         </div>`;
-      });
-      container.innerHTML = html;
+      }).join('');
     }
 
     function renderBlast(blast) {
-      const tbody = document.getElementById('blastTableBody');
+      const tb = document.getElementById('blastTableBody');
       if (!blast.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-3)">No blast radius data.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="5" class="empty" style="padding:40px">No blast radius data.</td></tr>';
         return;
       }
-
-      tbody.innerHTML = blast.map(b => {
-        const lvl = b.risk_level;
-        const cls = (lvl === 'critical' || lvl === 'high') ? 'badge-err' : (lvl === 'medium' ? 'badge-warn' : 'badge-info');
-        return `
-        <tr>
+      tb.innerHTML = blast.map(b => {
+        const cls = (b.risk_level==='critical'||b.risk_level==='high')
+          ? 'badge-err' : b.risk_level==='medium' ? 'badge-warn' : 'badge-info';
+        return `<tr>
           <td><strong>${escapeHtml(b.dependency_name)}</strong></td>
           <td><span class="badge ${cls}">${b.risk_level}</span></td>
-          <td>${escapeHtml((b.importing_files || []).join(', ') || 'None (Ghost)')}</td>
-          <td>${escapeHtml((b.affected_tests || []).join(', ') || 'None')}</td>
+          <td>${escapeHtml((b.importing_files||[]).join(', ')||'None')}</td>
+          <td>${escapeHtml((b.affected_tests||[]).join(', ')||'None')}</td>
           <td>${escapeHtml(b.summary)}</td>
         </tr>`;
       }).join('');
     }
 
     function renderVerifications(verifs) {
-      const tbody = document.getElementById('verifTableBody');
+      const tb = document.getElementById('verifTableBody');
       if (!verifs.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">No verification results.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="6" class="empty" style="padding:40px">No verification results.</td></tr>';
         return;
       }
-
-      tbody.innerHTML = verifs.map(v => {
-        const cls = v.status === 'verified' ? 'badge-ok' : (v.status === 'failed' ? 'badge-err' : 'badge-warn');
-        return `
-        <tr>
+      tb.innerHTML = verifs.map(v => {
+        const cls = v.status==='verified' ? 'badge-ok'
+          : v.status==='failed' ? 'badge-err' : 'badge-warn';
+        return `<tr>
           <td><code>${escapeHtml(v.id)}</code></td>
           <td>${escapeHtml(v.target)}</td>
           <td><span class="badge ${cls}">${v.status.toUpperCase()}</span></td>
-          <td style="text-align:center;">${v.exit_code !== null ? v.exit_code : '—'}</td>
-          <td style="text-align:right;">${v.duration_ms}ms</td>
-          <td style="text-align:center;">${v.sandbox_used ? 'Yes' : 'No'}</td>
+          <td style="text-align:center">${v.exit_code!==null ? v.exit_code : '—'}</td>
+          <td style="text-align:right">${v.duration_ms}ms</td>
+          <td style="text-align:center">${v.sandbox_used ? 'Yes' : 'No'}</td>
         </tr>`;
       }).join('');
     }
 
     function renderDebtAndLimits(debt, limits) {
-      const debtContainer = document.getElementById('debtList');
+      const el = document.getElementById('debtList');
       if (!debt.length) {
-        debtContainer.innerHTML = `
-        <div class="card" style="text-align:center; padding:32px;">
-          <div style="font-size:22px; color:var(--green); margin-bottom:6px;">✓</div>
+        el.innerHTML = `
+        <div class="card" style="text-align:center;padding:28px;">
+          <div style="font-size:20px;color:var(--green);margin-bottom:6px;">✓</div>
           <strong style="color:var(--green)">Zero Verification Debt</strong>
-          <p style="font-size:13px; color:var(--text-3); margin-top:4px;">All recommendations proven in isolated sandbox.</p>
+          <p style="font-size:12px;color:var(--text3);margin-top:4px;">All recommendations proven in isolated sandbox.</p>
         </div>`;
       } else {
-        debtContainer.innerHTML = debt.map(d => `
-        <div class="card debt-card">
+        el.innerHTML = debt.map(d => `
+        <div class="card">
           <div class="card-top">
             <span class="card-title">${escapeHtml(d.id)}: ${escapeHtml(d.title)}</span>
             <span class="badge badge-warn">${escapeHtml(d.status)}</span>
           </div>
-          <p style="font-size:13px; margin-bottom:6px; color:var(--text-2);"><strong>Why unverified:</strong> ${escapeHtml(d.unverified_reason)}</p>
-          <p style="font-size:12.5px; color:var(--text-3);"><strong>Next action:</strong> ${escapeHtml(d.recommended_maintainer_action)}</p>
+          <p style="font-size:12.5px;margin-bottom:5px;color:var(--text2)">
+            <strong>Why unverified:</strong> ${escapeHtml(d.unverified_reason)}</p>
+          <p style="font-size:12px;color:var(--text3)">
+            <strong>Next action:</strong> ${escapeHtml(d.recommended_maintainer_action)}</p>
         </div>`).join('');
       }
-
-      if (limits.length) {
-        document.getElementById('limitsList').innerHTML = limits.map(l => `<li>${escapeHtml(l)}</li>`).join('');
-      }
+      if (limits.length)
+        document.getElementById('limitsList').innerHTML =
+          limits.map(l => `<li>${escapeHtml(l)}</li>`).join('');
     }
 
     function filterFindings() {
       const q   = document.getElementById('findingSearch').value.toLowerCase();
       const sev = document.getElementById('severityFilter').value;
       const cat = document.getElementById('categoryFilter').value;
-
       document.querySelectorAll('.finding-item').forEach(el => {
-        const elSev    = el.getAttribute('data-severity');
-        const elCat    = el.getAttribute('data-category');
-        const elSearch = el.getAttribute('data-search').toLowerCase();
-
-        const matchQ   = !q || elSearch.includes(q);
-        const matchSev = sev === 'ALL' || elSev === sev;
-        const matchCat = cat === 'ALL' || elCat === cat;
-
-        el.style.display = (matchQ && matchSev && matchCat) ? 'block' : 'none';
+        const ok = (!q || el.getAttribute('data-search').toLowerCase().includes(q))
+          && (sev==='ALL' || el.getAttribute('data-severity')===sev)
+          && (cat==='ALL' || el.getAttribute('data-category')===cat);
+        el.style.display = ok ? 'block' : 'none';
       });
     }
 
     function copyMarkdown() {
-      const md = document.getElementById('capsuleMdView').textContent;
-      navigator.clipboard.writeText(md).then(() => alert('Capsule Markdown copied to clipboard!'));
+      navigator.clipboard.writeText(document.getElementById('capsuleMdView').textContent)
+        .then(() => alert('Capsule Markdown copied!'));
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
     }
 
-    // Attempt to preload initial results
     fetchResults();
   </script>
 </body>
