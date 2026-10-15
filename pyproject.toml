@@ -20,7 +20,5 @@ dependencies = [
 [project.scripts]
 repomedic = "repomedic.cli:cli"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["repomedic*"]
-exclude = ["target_repo*", "tests*"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]

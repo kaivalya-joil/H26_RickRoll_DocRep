@@ -1,8 +1,12 @@
-"""Deterministic rules engine and dependency resilience analyzer."""
+"""AI Analyzer and deterministic rules engine for dependency resilience."""
+
+from __future__ import annotations
 
 import re
-from typing import Dict, List, Set, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
 
+from .hermes_adapter import AIAnalysisResult, HermesAdapter
 from .models import (
     DependencyDeclaration,
     EvidenceReference,
@@ -12,21 +16,50 @@ from .models import (
     RepositoryMetadata,
     SourceImport,
 )
-from .scanner import PACKAGE_TO_MODULE_MAP, MODULE_TO_PACKAGE_MAP
+from .scanner import MODULE_TO_PACKAGE_MAP, PACKAGE_TO_MODULE_MAP
+
+SEVERITY_WEIGHTS = {
+    FindingSeverity.CRITICAL: 1.0,
+    FindingSeverity.HIGH: 0.8,
+    FindingSeverity.MEDIUM: 0.5,
+    FindingSeverity.LOW: 0.3,
+    FindingSeverity.INFO: 0.1,
+}
 
 
 class DependencyAnalyzer:
-    """Performs deterministic analysis: ghost detection, tripwires, and manifest conflicts."""
+    """Performs deterministic analysis (ghost detection, tripwires, conflicts)
+
+    and orchestrates AI analysis, ranking, and snippet extraction.
+    """
 
     def __init__(
         self,
-        metadata: RepositoryMetadata,
-        declarations: List[DependencyDeclaration],
-        imports: List[SourceImport],
+        metadata: Any,
+        declarations: Optional[List[DependencyDeclaration]] = None,
+        imports: Optional[List[SourceImport]] = None,
+        adapter: Optional[HermesAdapter] = None,
     ):
-        self.metadata = metadata
-        self.declarations = declarations
-        self.imports = imports
+        if isinstance(metadata, (str, Path)) and declarations is None:
+            self.repo_dir = Path(metadata).resolve()
+            self.metadata = RepositoryMetadata(
+                repo_name=self.repo_dir.name,
+                repo_path=str(self.repo_dir),
+                python_version_detected="3.10",
+                manifests_found=[],
+            )
+            self.declarations = []
+            self.imports = []
+        else:
+            self.metadata = metadata
+            self.declarations = declarations or []
+            self.imports = imports or []
+            if metadata and hasattr(metadata, "repo_path"):
+                self.repo_dir = Path(metadata.repo_path).resolve()
+            else:
+                self.repo_dir = Path(".").resolve()
+
+        self.adapter = adapter or HermesAdapter()
 
     def analyze(self) -> List[Finding]:
         """Run all deterministic analysis rules and return findings."""
@@ -47,7 +80,6 @@ class DependencyAnalyzer:
         counter = 1
         for pkg_name, decls in sorted(by_pkg.items()):
             if len(decls) > 1:
-                # Compare distinct specs
                 specs = {d.specifier for d in decls if d.specifier}
                 if len(specs) > 1:
                     evidence = [
@@ -84,22 +116,19 @@ class DependencyAnalyzer:
 
     def _detect_ghost_dependencies(self) -> List[Finding]:
         """Feature A: Dependency Ghost Detector.
-        
+
         Identify declared packages not observed in imports of scanned files.
         """
         findings: List[Finding] = []
-        
-        # Build set of all imported top-level modules
+
         imported_modules: Set[str] = {imp.module.lower() for imp in self.imports}
 
-        # Also map modules to known package names
         observed_packages: Set[str] = set()
         for mod in imported_modules:
             observed_packages.add(mod)
             if mod in MODULE_TO_PACKAGE_MAP:
                 observed_packages.add(MODULE_TO_PACKAGE_MAP[mod])
 
-        # Exclude build/test runners and dev tooling that might be executed via CLI
         cli_or_build_tools = {"pytest", "coverage", "flake8", "mypy", "black", "ruff", "setuptools"}
 
         declared_unique: Dict[str, List[DependencyDeclaration]] = {}
@@ -109,7 +138,7 @@ class DependencyAnalyzer:
         counter = 1
         for pkg_name, decls in sorted(declared_unique.items()):
             canonical_mod = PACKAGE_TO_MODULE_MAP.get(pkg_name, pkg_name).lower()
-            
+
             if pkg_name in cli_or_build_tools or canonical_mod in cli_or_build_tools:
                 continue
 
@@ -124,8 +153,7 @@ class DependencyAnalyzer:
                     )
                     for d in decls
                 ]
-                
-                # Contextual explanation
+
                 explanation = (
                     f"Package '{pkg_name}' is declared in project manifests ({', '.join(d.manifest_path for d in decls)}), "
                     f"but no AST import statement for '{pkg_name}' or module '{canonical_mod}' was found across the "
@@ -151,7 +179,7 @@ class DependencyAnalyzer:
 
     def _detect_migration_tripwires(self) -> List[Finding]:
         """Feature C: Migration Tripwire.
-        
+
         Compare actual usage evidence with available compatibility evidence for proposed modern replacements.
         """
         findings: List[Finding] = []
@@ -178,7 +206,7 @@ class DependencyAnalyzer:
                         file_path=imp.file_path,
                         line_start=imp.line_number,
                         line_end=imp.line_number,
-                        content_snippet=f"import toml (or from toml import ...)",
+                        content_snippet="import toml (or from toml import ...)",
                         source_type="source_ast",
                     )
                 )
@@ -279,7 +307,11 @@ class DependencyAnalyzer:
             counter += 1
 
         # Check 4: pkg_resources in resources.py
-        pkg_res_imports = [i for i in self.imports if i.module in ("pkg_resources", "setuptools") or "pkg_resources" in i.imported_names]
+        pkg_res_imports = [
+            i
+            for i in self.imports
+            if i.module in ("pkg_resources", "setuptools") or "pkg_resources" in i.imported_names
+        ]
         if pkg_res_imports:
             evidence = [
                 EvidenceReference(
@@ -379,3 +411,52 @@ class DependencyAnalyzer:
                     )
                     counter += 1
         return findings
+
+    def rank_findings(self, findings: List[Finding]) -> List[Finding]:
+        """Rank findings by severity x confidence score."""
+
+        def score(f: Finding) -> float:
+            sev_w = SEVERITY_WEIGHTS.get(f.severity, 0.5)
+            return sev_w * (f.confidence or 0.8)
+
+        return sorted(findings, key=score, reverse=True)
+
+    def extract_snippet(self, finding: Finding, window: int = 5) -> str:
+        """Extract ~5 lines around cited line evidence."""
+        if not finding.evidence:
+            return "No file evidence reference available."
+
+        ref = finding.evidence[0]
+        file_p = self.repo_dir / ref.file_path
+        if not file_p.exists() or not file_p.is_file():
+            return ref.content_snippet or "Snippet not accessible on disk."
+
+        try:
+            lines = file_p.read_text(encoding="utf-8", errors="replace").splitlines()
+            target_line = ref.line_start or 1
+            start = max(0, target_line - (window // 2) - 1)
+            end = min(len(lines), start + window)
+            numbered = [f"{i+1:3d} | {lines[i]}" for i in range(start, end)]
+            return "\n".join(numbered)
+        except Exception as e:
+            return f"Error reading snippet: {e}"
+
+    def run_analysis(
+        self,
+        findings: List[Finding],
+        deep: bool = False,
+    ) -> List[Tuple[Finding, AIAnalysisResult]]:
+        """Run AI analysis. In fast mode (default) analyzes top 5; --deep analyzes all."""
+        ranked = self.rank_findings(findings)
+        selected = ranked if deep else ranked[:5]
+
+        results = []
+        for finding in selected:
+            snippet = self.extract_snippet(finding)
+            res = self.adapter.analyze_finding(finding, snippet)
+            results.append((finding, res))
+
+        return results
+
+
+AIAnalyzer = DependencyAnalyzer

@@ -65,6 +65,8 @@ class Finding(BaseModel):
     severity: FindingSeverity = Field(..., description="Impact severity")
     status: FindingStatus = Field(..., description="Observed, Inferred, etc.")
     package_name: Optional[str] = Field(None, description="Associated package name if applicable")
+    confidence: float = Field(default=1.0, description="Confidence level (0.0 to 1.0)")
+    limitations: List[str] = Field(default_factory=list, description="Known scanner limitations or inconclusive caveats")
     evidence: List[EvidenceReference] = Field(default_factory=list, description="Concrete supporting evidence")
     remediation_hint: Optional[str] = Field(None, description="Proposed remediation step")
 

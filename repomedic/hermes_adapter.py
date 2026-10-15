@@ -1,45 +1,80 @@
-"""Hermes Agent and local open-weight model adapter with graceful fallback."""
+"""Hermes Agent + Ollama adapter with strict schema, caching, retry-once, and timeout handling."""
 
+from __future__ import annotations
+
+import hashlib
 import json
 import os
 import shutil
 import subprocess
+import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, Field, ValidationError
 
-from .models import (
-    AIRecommendation,
-    Finding,
-    FindingStatus,
-)
+from .models import AIRecommendation, Finding, FindingStatus
+from .verifier import ALLOWED_SAFE_CHECKS
+
+
+class StructuredRecommendationSchema(BaseModel):
+    """Strict schema required from Hermes/Ollama model."""
+    problem_explanation: str = Field(..., description="Explanation of the root issue")
+    evidence_significance: str = Field(..., description="Why the concrete evidence matters")
+    impact_and_uncertainty: str = Field(..., description="Scope of impact and unknowns")
+    recommended_action: str = Field(..., description="Specific recommended remediation")
+    suggested_migration: Optional[str] = Field(None, description="Migration plan if applicable")
+    verification_check_name: str = Field(..., description="Must be one of the allowed verifier check names")
+    assumptions: List[str] = Field(default_factory=list, description="Assumptions made by the recommendation")
+    counterarguments: List[str] = Field(default_factory=list, description="Plausible counterarguments")
+    disproving_evidence: str = Field(..., description="Evidence that would disprove this recommendation")
+    open_compatibility_concerns: List[str] = Field(default_factory=list)
+
+
+class AIAnalysisResult(BaseModel):
+    finding_id: str
+    package_name: str
+    is_cached: bool = False
+    status: str  # "success", "failed", "cached"
+    error_message: Optional[str] = None
+    structured_data: Optional[StructuredRecommendationSchema] = None
+    raw_response: Optional[str] = None
+    latency_ms: int = 0
+
+
+CACHE_DIR = Path(".repomedic_cache")
+PROMPT_VERSION = "v2_structured"
 
 
 class HermesAdapter:
-    """Adapter for interacting with Hermes Agent CLI or local model endpoints."""
+    """Communicates with Ollama/Hermes via local OpenAI-compatible endpoint with caching & validation."""
 
     def __init__(
         self,
-        hermes_bin: Optional[str] = None,
-        local_endpoint: Optional[str] = None,
+        endpoint: Optional[str] = None,
         model_name: Optional[str] = None,
+        timeout: int = 30,
     ):
-        self.hermes_bin = hermes_bin or shutil.which("hermes")
-        self.local_endpoint = (
-            local_endpoint
+        self.endpoint = (
+            endpoint
             or os.environ.get("REPOMEDIC_LOCAL_MODEL_URL")
-            or os.environ.get("OLLAMA_HOST")
-        )
+            or "http://127.0.0.1:11434"
+        ).rstrip("/")
         self.model_name = (
             model_name
             or os.environ.get("REPOMEDIC_LOCAL_MODEL")
-            or "hermes-3-llama-3.1-8b"
+            or "qwen2.5-coder:1.5b"
         )
+        self.timeout = timeout
+        self.hermes_bin = shutil.which("hermes")
+        self.local_endpoint = self.endpoint
         self.is_hermes_installed = bool(self.hermes_bin)
+        self._warmed_up = False
+        CACHE_DIR.mkdir(exist_ok=True)
 
-    def get_runtime_status(self) -> Dict[str, str | bool | None]:
+    def get_runtime_status(self) -> Dict[str, Any]:
         """Inspect environment for Hermes CLI and local model runtimes."""
         hermes_version = None
-        if self.is_hermes_installed:
+        if self.is_hermes_installed and self.hermes_bin:
             try:
                 res = subprocess.run(
                     [self.hermes_bin, "--version"],
@@ -60,67 +95,18 @@ class HermesAdapter:
         }
 
     def generate_recommendations(self, findings: List[Finding]) -> List[AIRecommendation]:
-        """Generate evidence-backed recommendations for identified findings.
-        
-        Attempts Hermes execution or local endpoint if available; otherwise falls back
-        transparently to deterministic expert recommendations without fabricating runs.
-        """
+        """Generate evidence-backed recommendations for identified findings."""
         recommendations: List[AIRecommendation] = []
         counter = 1
-
         for finding in findings:
             rec = self._generate_single_recommendation(finding, counter)
             if rec:
                 recommendations.append(rec)
                 counter += 1
-
         return recommendations
 
     def _generate_single_recommendation(self, finding: Finding, index: int) -> Optional[AIRecommendation]:
         """Generate recommendation for a finding with explicit source provenance."""
-        # Check if local endpoint is reachable
-        if self.local_endpoint:
-            try:
-                import requests
-                prompt = (
-                    f"Analyze this dependency finding:\n"
-                    f"ID: {finding.id}\nCategory: {finding.category}\nTitle: {finding.title}\n"
-                    f"Explanation: {finding.explanation}\n"
-                    f"Provide recommended action (remove, replace, upgrade, or retain) and rationale."
-                )
-                resp = requests.post(
-                    f"{self.local_endpoint.rstrip('/')}/v1/chat/completions",
-                    json={
-                        "model": self.model_name,
-                        "messages": [
-                            {"role": "system", "content": "You are a software maintenance expert analyzing repository dependency resilience."},
-                            {"role": "user", "content": prompt},
-                        ],
-                        "temperature": 0.2,
-                    },
-                    timeout=3,
-                )
-                if resp.status_code == 200:
-                    data = resp.json()
-                    content = data["choices"][0]["message"]["content"]
-                    return AIRecommendation(
-                        id=f"REC-{index:03d}",
-                        finding_id=finding.id,
-                        package_name=finding.package_name or "unknown",
-                        title=f"AI Recommendation for {finding.package_name or finding.id}",
-                        rationale=content,
-                        suggested_action="see_rationale",
-                        target_replacement=None,
-                        confidence=0.85,
-                        status=FindingStatus.RECOMMENDED,
-                        source="hermes_agent_local",
-                        model_name=self.model_name,
-                    )
-            except Exception:
-                # Local endpoint unreachable; continue to deterministic fallback
-                pass
-
-        # Deterministic domain-expert recommendation fallback
         action = "retain"
         target_replacement = None
         rationale = ""
@@ -188,3 +174,195 @@ class HermesAdapter:
             source="deterministic_fallback",
             model_name="repomedic-resilience-rules",
         )
+
+    def warmup_check(self) -> Dict[str, Any]:
+        """Check once at startup if Ollama is running and model exists."""
+        if self._warmed_up:
+            return {"status": "ok", "already_warmed": True}
+        import requests
+        try:
+            r = requests.get(f"{self.endpoint}/api/tags", timeout=5)
+            if r.status_code != 200:
+                return {"status": "error", "error": f"Ollama returned HTTP {r.status_code}"}
+            models = [m.get("name") for m in r.json().get("models", [])]
+            # Match model prefix
+            has_model = any(self.model_name in m for m in models)
+            if not has_model:
+                return {
+                    "status": "error",
+                    "error": f"Model '{self.model_name}' not found in Ollama models: {models}",
+                }
+            self._warmed_up = True
+            return {"status": "ok", "models": models}
+        except Exception as e:
+            return {"status": "error", "error": f"Ollama is not running or unreachable at {self.endpoint}: {e}"}
+
+    def _cache_key(self, finding: Finding, snippet: str) -> str:
+        raw = f"{finding.id}:{finding.explanation}:{snippet}:{self.model_name}:{PROMPT_VERSION}"
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def analyze_finding(self, finding: Finding, snippet: str, use_cache: bool = True) -> AIAnalysisResult:
+        """Analyze a finding with strict schema validation, disk caching, and retry-once."""
+        key = self._cache_key(finding, snippet)
+        cache_file = CACHE_DIR / f"{key}.json"
+
+        if use_cache and cache_file.exists():
+            try:
+                cached_data = json.loads(cache_file.read_text(encoding="utf-8"))
+                return AIAnalysisResult(
+                    finding_id=finding.id,
+                    package_name=finding.package_name or "unknown",
+                    is_cached=True,
+                    status="cached",
+                    structured_data=StructuredRecommendationSchema(**cached_data["structured_data"]),
+                    raw_response=cached_data.get("raw_response"),
+                    latency_ms=0,
+                )
+            except Exception:
+                pass
+
+        # Check warmup
+        warm = self.warmup_check()
+        if warm["status"] != "ok":
+            return AIAnalysisResult(
+                finding_id=finding.id,
+                package_name=finding.package_name or "unknown",
+                status="failed",
+                error_message=warm["error"],
+            )
+
+        prompt = self._build_prompt(finding, snippet)
+        
+        # Call with retry ONCE
+        for attempt in range(2):
+            start = time.monotonic()
+            raw, err = self._call_model(prompt)
+            elapsed = int((time.monotonic() - start) * 1000)
+
+            if err:
+                if attempt == 1:
+                    return AIAnalysisResult(
+                        finding_id=finding.id,
+                        package_name=finding.package_name or "unknown",
+                        status="failed",
+                        error_message=err,
+                        latency_ms=elapsed,
+                    )
+                continue  # Retry once
+
+            # Validate strict JSON schema
+            try:
+                clean = raw.strip()
+                if "```json" in clean:
+                    clean = clean.split("```json")[-1].split("```")[0].strip()
+                elif "```" in clean:
+                    clean = clean.split("```")[-1].split("```")[0].strip()
+                parsed_json = json.loads(clean)
+                structured = StructuredRecommendationSchema(**parsed_json)
+
+                # Validate check name against verifier allow-list
+                if structured.verification_check_name not in ALLOWED_SAFE_CHECKS:
+                    # reject hallucinated checks
+                    if attempt == 0:
+                        prompt += f"\nNote: verification_check_name MUST be one of {list(ALLOWED_SAFE_CHECKS.keys())}."
+                        continue
+                    else:
+                        return AIAnalysisResult(
+                            finding_id=finding.id,
+                            package_name=finding.package_name or "unknown",
+                            status="failed",
+                            error_message=f"Disallowed verification check '{structured.verification_check_name}'.",
+                            raw_response=raw,
+                            latency_ms=elapsed,
+                        )
+
+                # Save to disk cache
+                cache_file.write_text(json.dumps({
+                    "structured_data": structured.model_dump(),
+                    "raw_response": raw,
+                }), encoding="utf-8")
+
+                return AIAnalysisResult(
+                    finding_id=finding.id,
+                    package_name=finding.package_name or "unknown",
+                    is_cached=False,
+                    status="success",
+                    structured_data=structured,
+                    raw_response=raw,
+                    latency_ms=elapsed,
+                )
+            except (json.JSONDecodeError, ValidationError) as ve:
+                if attempt == 0:
+                    prompt += "\nError: Previous response did not match JSON schema. Respond strictly with valid JSON."
+                    continue
+                return AIAnalysisResult(
+                    finding_id=finding.id,
+                    package_name=finding.package_name or "unknown",
+                    status="failed",
+                    error_message=f"Schema validation failed: {ve}",
+                    raw_response=raw,
+                    latency_ms=elapsed,
+                )
+
+        return AIAnalysisResult(
+            finding_id=finding.id,
+            package_name=finding.package_name or "unknown",
+            status="failed",
+            error_message="Exhausted retry attempts.",
+        )
+
+    def _call_model(self, prompt: str) -> tuple[Optional[str], Optional[str]]:
+        import requests
+        try:
+            resp = requests.post(
+                f"{self.endpoint}/v1/chat/completions",
+                json={
+                    "model": self.model_name,
+                    "messages": [
+                        {"role": "system", "content": "You are a software maintenance agent. Output only valid JSON matching the exact requested schema."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.0,
+                    "max_tokens": 512,
+                },
+                timeout=self.timeout,
+            )
+            if resp.status_code != 200:
+                return None, f"HTTP Error {resp.status_code}: {resp.text}"
+            data = resp.json()
+            return data["choices"][0]["message"]["content"], None
+        except requests.exceptions.Timeout:
+            return None, f"Model call timed out after {self.timeout}s."
+        except requests.exceptions.ConnectionError:
+            return None, f"Connection refused connecting to Ollama at {self.endpoint}."
+        except Exception as e:
+            return None, str(e)
+
+    def _build_prompt(self, finding: Finding, snippet: str) -> str:
+        allow_checks = list(ALLOWED_SAFE_CHECKS.keys())
+        return f"""Analyze this repository dependency finding:
+Finding ID: {finding.id}
+Category: {finding.category}
+Package: {finding.package_name}
+Title: {finding.title}
+Explanation: {finding.explanation}
+Code Evidence Context (5 lines around finding):
+\"\"\"
+{snippet}
+\"\"\"
+
+Allowed verifier checks: {allow_checks}
+
+Return STRICT JSON matching this schema:
+{{
+  "problem_explanation": "...",
+  "evidence_significance": "...",
+  "impact_and_uncertainty": "...",
+  "recommended_action": "...",
+  "suggested_migration": "...",
+  "verification_check_name": "<MUST be one from {allow_checks}>",
+  "assumptions": ["..."],
+  "counterarguments": ["..."],
+  "disproving_evidence": "...",
+  "open_compatibility_concerns": ["..."]
+}}"""
