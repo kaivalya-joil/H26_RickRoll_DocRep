@@ -123,10 +123,44 @@ class RepositoryMetadata(BaseModel):
     test_files_count: int = 0
 
 
+class RecommendationChallenge(BaseModel):
+    """Rigorous recommendation challenge: assumptions, counterarguments, and disproving evidence."""
+    recommendation_id: str
+    finding_id: str
+    package_name: str
+    assumptions: List[str] = Field(default_factory=list, description="Explicit assumptions made by recommendation")
+    supporting_evidence: List[str] = Field(default_factory=list, description="Concrete observed repository facts supporting it")
+    counterarguments: List[str] = Field(default_factory=list, description="Plausible reasons NOT to apply this recommendation")
+    disproving_evidence: str = Field(..., description="What observable evidence would invalidate this recommendation")
+    verification_check_needed: str = Field(..., description="Specific verification check required before merging")
+    check_ran: bool = Field(default=False)
+    check_result: str = Field(default="NOT_RUN", description="VERIFIED, FAILED, BLOCKED, or NOT_RUN")
+
+
+class VerificationDebtItem(BaseModel):
+    """Identifies an unverified change, the reason it could not be completed, and next maintainer steps."""
+    id: str
+    target: str
+    title: str
+    unverified_reason: str
+    recommended_maintainer_action: str
+    status: str = Field(default="UNVERIFIED", description="UNVERIFIED, BLOCKED, or PARTIAL")
+
+
+class MigrationPlanStep(BaseModel):
+    """Structured step within the proposed migration plan."""
+    step: int
+    target_package: str
+    action: str
+    description: str
+    risk_level: FindingSeverity = Field(default=FindingSeverity.LOW)
+    verification_required: str
+
+
 class AuditFingerprint(BaseModel):
     """Cryptographic and environment audit record for reproducible verification."""
     tool_name: str = "RepoMedic"
-    tool_version: str = "0.1.0"
+    tool_version: str = "0.2.0"
     python_runtime: str
     timestamp: str
     manifest_hashes: Dict[str, str] = Field(default_factory=dict)
@@ -136,14 +170,21 @@ class AuditFingerprint(BaseModel):
 
 class DependencyExitCapsule(BaseModel):
     """Portable, evidence-backed Dependency Exit Capsule data structure."""
-    version: str = "1.0.0"
+    version: str = "1.1.0"
+    tool_name: str = "DocRep"
+    tool_version: str = "0.2.0"
     metadata: RepositoryMetadata
     fingerprint: AuditFingerprint
     declarations: List[DependencyDeclaration] = Field(default_factory=list)
     imports: List[SourceImport] = Field(default_factory=list)
     findings: List[Finding] = Field(default_factory=list)
     recommendations: List[AIRecommendation] = Field(default_factory=list)
+    recommendation_challenges: List[RecommendationChallenge] = Field(default_factory=list)
     verifications: List[VerificationResult] = Field(default_factory=list)
     blast_radii: List[BlastRadiusEntry] = Field(default_factory=list)
-    verification_debt: List[str] = Field(default_factory=list, description="Untested or partially verified recommendations")
+    migration_plan: List[MigrationPlanStep] = Field(default_factory=list)
+    verification_debt: List[str] = Field(default_factory=list, description="Untested or partially verified recommendations summary")
+    verification_debt_details: List[VerificationDebtItem] = Field(default_factory=list, description="Structured verification debt items")
+    limitations: List[str] = Field(default_factory=list, description="Scanner and environment limitations")
+    model_info: Optional[Dict[str, Any]] = Field(default=None, description="Metadata regarding AI model execution")
     generated_at: str

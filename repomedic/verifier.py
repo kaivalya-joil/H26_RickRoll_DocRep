@@ -230,3 +230,10 @@ class SafeVerificationRunner:
 
     def run_baseline_tests(self) -> VerificationResult:
         return self.execute_check("test_suite_run", "VERIFY-BASELINE")
+
+    def run_all_checks(self) -> List[VerificationResult]:
+        """Execute all allow-listed safe verification checks."""
+        results: List[VerificationResult] = []
+        for name in ALLOWED_SAFE_CHECKS:
+            results.append(self.execute_check(name))
+        return results

@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocRep 🩺 — Dependency Resilience Workbench</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-2: #f1f5f9;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --info: #0284c7;
+      --info-bg: #e0f2fe;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --code-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg: #090d16;
+      --surface: #131b2e;
+      --surface-2: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --success: #22c55e;
+      --success-bg: rgba(34, 197, 94, 0.15);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.15);
+      --info: #38bdf8;
+      --info-bg: rgba(56, 189, 248, 0.15);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 0;
+      margin: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .brand span { color: var(--text); font-size: 0.9rem; font-weight: 500; opacity: 0.8; }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: var(--surface-2); color: var(--text); border-color: var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { opacity: 0.9; }
+    .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    main { max-width: 1280px; margin: 0 auto; padding: 20px; }
+
+    /* Status Bar */
+    .status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-ok { background: var(--success); }
+    .dot-warn { background: var(--warning); }
+    .dot-err { background: var(--danger); }
+
+    .alert-banner {
+      background: var(--warning-bg);
+      border: 1px solid var(--warning);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .alert-banner code {
+      background: rgba(0,0,0,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--code-font);
+      font-weight: bold;
+    }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 10px 16px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.2s ease-in; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Home Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.95rem;
+    }
+    .form-control:focus { outline: 2px solid var(--primary); }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .hint-box {
+      background: var(--info-bg);
+      color: var(--text);
+      border-left: 4px solid var(--info);
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+
+    /* Progress View */
+    .progress-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      background: var(--surface-2);
+      border-radius: 6px;
+      height: 10px;
+      overflow: hidden;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+    .progress-bar-fill {
+      background: var(--primary);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      text-align: left;
+    }
+    th, td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--surface-2);
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface-2); }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-critical, .badge-failed { background: var(--danger-bg); color: var(--danger); }
+    .badge-high { background: var(--danger-bg); color: var(--danger); }
+    .badge-medium, .badge-blocked { background: var(--warning-bg); color: var(--warning); }
+    .badge-low, .badge-info { background: var(--info-bg); color: var(--info); }
+    .badge-verified, .badge-pass { background: var(--success-bg); color: var(--success); }
+    .badge-observed { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .badge-ai { background: #ede9fe; color: #7c3aed; }
+    .badge-cached { background: #e0e7ff; color: #4338ca; }
+
+    /* Evidence accordion */
+    .evidence-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      margin-top: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Challenge card */
+    .challenge-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .challenge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+    }
+    .challenge-box {
+      background: var(--surface-2);
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .challenge-box h5 {
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Markdown preview */
+    .markdown-view {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 768px) {
+      header { flex-direction: column; gap: 10px; align-items: flex-start; }
+      .header-actions { width: 100%; justify-content: space-between; }
+      .status-bar { flex-direction: column; align-items: flex-start; }
+      .control-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      🩺 DocRep
+      <span>Evidence-Backed Dependency Resilience Workbench</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" id="themeToggle" aria-label="Toggle Dark/Light Mode">🌙 Theme</button>
+      <button class="btn btn-primary btn-sm" onclick="switchTab('tab-home')">⚡ Dashboard</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Status Bar -->
+    <div class="status-bar" id="statusBar">
+      <div class="status-item">
+        <span class="status-dot dot-warn" id="dotHermes"></span>
+        <span id="textHermes">Hermes Agent: Checking...</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot dot-warn" id="dotOllama"></span>
+        <span id="textOllama">Ollama: Checking...</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot dot-warn" id="dotModel"></span>
+        <span id="textModel">Model: Checking...</span>
+      </div>
+      <div class="status-item" style="margin-left: auto;">
+        <button class="btn btn-secondary btn-sm" onclick="refreshStatus()">↻ Refresh Status</button>
+      </div>
+    </div>
+
+    <!-- Alert Banner (shown when model/ollama missing) -->
+    <div class="alert-banner" id="modelAlertBanner">
+      <strong>⚠️ Local Model Advisory:</strong> <span id="modelAlertMsg">Ollama is not running.</span>
+      <div style="margin-top: 6px;">To install or run locally: <code id="modelFixCmd">ollama pull qwen2.5-coder:1.5b</code></div>
+    </div>
+
+    <!-- Live Progress Section -->
+    <div class="progress-section" id="progressSection">
+      <div class="progress-header">
+        <strong id="progressStepTitle">Running full resilience audit...</strong>
+        <button class="btn btn-danger btn-sm" id="cancelJobBtn" onclick="cancelJob()">Cancel</button>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);" id="progressDetail">Starting background process...</div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab('tab-home')">🏠 Home</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('tab-findings')">🔍 Findings <span id="badgeFindingsCount" class="badge badge-info" style="display:none;">0</span></button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('tab-ai')">🤖 AI Suggestions</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('tab-impact')">💥 Change Blast-Radius</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('tab-verification')">🧪 Verification</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('tab-debt')">⚠️ Debt & Limits</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('tab-capsule')">📜 Capsule Export</button>
+    </div>
+
+    <!-- TAB 1: HOME -->
+    <div class="tab-pane active" id="tab-home" role="tabpanel">
+      <div class="card">
+        <div class="card-title">Repository Resilience Audit Runner</div>
+        <div class="form-group">
+          <label class="form-label" for="repoPathInput">Target Repository Directory Path</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="repoPathInput" class="form-control" value="target_repo/linkwatch" placeholder="e.g. target_repo/linkwatch">
+            <button class="btn btn-secondary" onclick="document.getElementById('repoPathInput').value='target_repo/linkwatch'">LinkWatch</button>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <label class="toggle-label">
+            <input type="checkbox" id="deepToggle">
+            <span><strong>Deep Mode</strong> (Analyze all findings with AI instead of top 5)</span>
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="noAiToggle">
+            <span><strong>No-AI Mode</strong> (Deterministic scanner + verifier only)</span>
+          </label>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+          <button class="btn btn-primary" id="btnRunFull" onclick="startAudit('run')">🚀 Run Full Analysis</button>
+          <button class="btn btn-secondary" onclick="startAudit('scan')">📁 Scan Only</button>
+          <button class="btn btn-secondary" onclick="startAudit('analyze')">🔬 Analyze Only</button>
+          <button class="btn btn-secondary" onclick="startAudit('verify')">🧪 Verify Only</button>
+        </div>
+
+        <div class="hint-box">
+          💡 <strong>How to start:</strong> Verify the target repository path above and click <strong>Run Full Analysis</strong>. DocRep executes static AST discovery, evaluates deterministic tripwires, runs local AI reasoning, executes isolated sandbox checks, and exports a signed Dependency Exit Capsule.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Recent Repositories</div>
+        <ul style="list-style: none; padding-left: 0; font-size: 0.9rem;">
+          <li style="padding: 6px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+            <code>target_repo/linkwatch</code>
+            <button class="btn btn-secondary btn-sm" onclick="setRepo('target_repo/linkwatch')">Select</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TAB 2: FINDINGS -->
+    <div class="tab-pane" id="tab-findings" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <span>Observed & Inferred Resilience Findings</span>
+          <div style="display: flex; gap: 8px;">
+            <select id="filterSeverity" class="form-control" style="width: auto; padding: 4px 8px; font-size: 0.85rem;" onchange="renderFindingsTable()">
+              <option value="ALL">All Severities</option>
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <select id="filterCategory" class="form-control" style="width: auto; padding: 4px 8px; font-size: 0.85rem;" onchange="renderFindingsTable()">
+              <option value="ALL">All Categories</option>
+              <option value="ghost_dependency">Ghost Dependencies</option>
+              <option value="migration_tripwire">Migration Tripwires</option>
+              <option value="manifest_conflict">Manifest Conflicts</option>
+              <option value="private_api">Private APIs</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-container">
+          <table id="findingsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Category</th>
+                <th>Severity</th>
+                <th>Package</th>
+                <th>Title</th>
+                <th>Evidence</th>
+              </tr>
+            </thead>
+            <tbody id="findingsTableBody">
+              <tr><td colspan="6" style="text-align:center; color: var(--text-muted);">No analysis run yet. Click "Run Full Analysis" to start.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI SUGGESTIONS -->
+    <div class="tab-pane" id="tab-ai" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <span>Local Model Reasoning & Recommendations</span>
+          <span class="badge badge-ai" id="aiModelBadge">Hermes / Ollama</span>
+        </div>
+        <div class="hint-box" style="margin-bottom: 16px;">
+          ⚖️ <strong>Probabilistic Notice:</strong> All AI suggestions are subject to the Recommendation Challenges below. Every recommendation requires verified sandbox execution before merge.
+        </div>
+        <div id="aiRecommendationsContainer">
+          <p style="color: var(--text-muted); text-align: center; padding: 20px;">No recommendations available yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: IMPACT -->
+    <div class="tab-pane" id="tab-impact" role="tabpanel">
+      <div class="card">
+        <div class="card-title">Change Blast-Radius Map</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Dependency</th>
+                <th>Risk Level</th>
+                <th>Importing Modules (Direct)</th>
+                <th>Impacted Tests (Inferred)</th>
+                <th>Summary Assessment</th>
+              </tr>
+            </thead>
+            <tbody id="impactTableBody">
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No blast radius computed yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: VERIFICATION -->
+    <div class="tab-pane" id="tab-verification" role="tabpanel">
+      <div class="card">
+        <div class="card-title">Executed Verification Checks (Sandbox Isolated)</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Check ID</th>
+                <th>Target</th>
+                <th>Status</th>
+                <th>Exit Code</th>
+                <th>Duration</th>
+                <th>Sandbox</th>
+              </tr>
+            </thead>
+            <tbody id="verificationTableBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No verification checks executed yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: DEBT & LIMITS -->
+    <div class="tab-pane" id="tab-debt" role="tabpanel">
+      <div class="card">
+        <div class="card-title">⚠️ Verification Debt Ledger</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+          Unfinished checks must never look done. Items below represent recommendations that could not be fully proven in sandbox and require explicit maintainer testing.
+        </p>
+        <div id="debtContainer">
+          <p style="color: var(--text-muted); text-align: center; padding: 10px;">No debt items recorded yet.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Scanner & Environment Limitations</div>
+        <ul id="limitsList" style="font-size: 0.9rem; padding-left: 20px;">
+          <li>Static AST analysis cannot detect dynamic runtime imports (e.g. <code>importlib.import_module</code>).</li>
+          <li>Closed-source transitive dependencies require clean container testing.</li>
+          <li>AI recommendations are probabilistic suggestions and must be verified against repository tests before adoption.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TAB 7: CAPSULE -->
+    <div class="tab-pane" id="tab-capsule" role="tabpanel">
+      <div class="card">
+        <div class="card-title">
+          <span>Dependency Exit Capsule (Proof-Carrying Artifact)</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" onclick="downloadCapsule('md')">📥 Download Markdown</button>
+            <button class="btn btn-secondary btn-sm" onclick="downloadCapsule('json')">📥 Download JSON</button>
+            <button class="btn btn-secondary btn-sm" onclick="copyCapsulePath()">📋 Copy Path</button>
+          </div>
+        </div>
+        <div id="capsuleMetadata" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;"></div>
+        <div class="markdown-view" id="capsuleMarkdownView">Run analysis to generate and inspect capsule.md here.</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let pollInterval = null;
+    let currentResults = null;
+
+    // Theme Toggle
+    const themeBtn = document.getElementById('themeToggle');
+    function initTheme() {
+      const saved = localStorage.getItem('docrep-theme');
+      if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+        themeBtn.textContent = saved === 'dark' ? '☀️ Light' : '🌙 Dark';
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeBtn.textContent = '☀️ Light';
+      }
+    }
+    themeBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('docrep-theme', next);
+      themeBtn.textContent = next === 'dark' ? '☀️ Light' : '🌙 Dark';
+    });
+    initTheme();
+
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      
+      const targetPane = document.getElementById(tabId);
+      if (targetPane) targetPane.classList.add('active');
+
+      const matchingBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+      if (matchingBtn) matchingBtn.classList.add('active');
+    }
+
+    function setRepo(p) {
+      document.getElementById('repoPathInput').value = p;
+    }
+
+    // Status Check
+    async function refreshStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+
+        // Hermes
+        const dotH = document.getElementById('dotHermes');
+        const txtH = document.getElementById('textHermes');
+        if (data.hermes.found) {
+          dotH.className = 'status-dot dot-ok';
+          txtH.textContent = `Hermes CLI: ${data.hermes.version || 'Found'}`;
+        } else {
+          dotH.className = 'status-dot dot-warn';
+          txtH.textContent = `Hermes CLI: Local fallback active`;
+        }
+
+        // Ollama
+        const dotO = document.getElementById('dotOllama');
+        const txtO = document.getElementById('textOllama');
+        if (data.ollama.running) {
+          dotO.className = 'status-dot dot-ok';
+          txtO.textContent = `Ollama: Online (${data.ollama.endpoint})`;
+        } else {
+          dotO.className = 'status-dot dot-err';
+          txtO.textContent = `Ollama: Offline`;
+        }
+
+        // Model
+        const dotM = document.getElementById('dotModel');
+        const txtM = document.getElementById('textModel');
+        const banner = document.getElementById('modelAlertBanner');
+        if (data.model.ready) {
+          dotM.className = 'status-dot dot-ok';
+          txtM.textContent = `Model: ${data.model.name} (Ready)`;
+          banner.style.display = 'none';
+        } else {
+          dotM.className = 'status-dot dot-err';
+          txtM.textContent = `Model: ${data.model.name} (Missing)`;
+          banner.style.display = 'block';
+          document.getElementById('modelAlertMsg').textContent = `Target model '${data.model.name}' is not ready.`;
+          document.getElementById('modelFixCmd').textContent = data.model.fix || `ollama pull ${data.model.name}`;
+        }
+      } catch (err) {
+        console.error('Failed to fetch status:', err);
+      }
+    }
+    refreshStatus();
+
+    // Start Analysis Job
+    async function startAudit(action = 'run') {
+      const repoPath = document.getElementById('repoPathInput').value.trim();
+      const deep = document.getElementById('deepToggle').checked;
+      const noAi = document.getElementById('noAiToggle').checked;
+
+      if (!repoPath) {
+        alert('Please enter a repository path.');
+        return;
+      }
+
+      document.getElementById('progressSection').style.display = 'block';
+      document.getElementById('progressBarFill').style.width = '5%';
+      document.getElementById('progressStepTitle').textContent = 'Starting analysis...';
+      document.getElementById('progressDetail').textContent = 'Submitting request to background worker...';
+
+      try {
+        const res = await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ repo_path: repoPath, action, deep, no_ai: noAi })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.error || 'Failed to start analysis.');
+          document.getElementById('progressSection').style.display = 'none';
+          return;
+        }
+
+        startPolling();
+      } catch (err) {
+        alert(`Error starting audit: ${err.message}`);
+        document.getElementById('progressSection').style.display = 'none';
+      }
+    }
+
+    // Cancel Job
+    async function cancelJob() {
+      try {
+        await fetch('/api/cancel', { method: 'POST' });
+        document.getElementById('progressDetail').textContent = 'Cancellation requested...';
+      } catch (err) {
+        console.error('Failed to cancel job:', err);
+      }
+    }
+
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(checkJobStatus, 800);
+    }
+
+    async function checkJobStatus() {
+      try {
+        const res = await fetch('/api/job');
+        const state = await res.json();
+
+        const pFill = document.getElementById('progressBarFill');
+        const pTitle = document.getElementById('progressStepTitle');
+        const pDetail = document.getElementById('progressDetail');
+
+        pFill.style.width = `${state.progress_pct}%`;
+        pDetail.textContent = state.current_step;
+
+        if (state.status === 'completed') {
+          clearInterval(pollInterval);
+          pTitle.textContent = 'Analysis Complete!';
+          setTimeout(() => {
+            document.getElementById('progressSection').style.display = 'none';
+          }, 1500);
+          loadResults();
+        } else if (state.status === 'failed') {
+          clearInterval(pollInterval);
+          pTitle.textContent = 'Analysis Failed';
+          pDetail.textContent = state.error_message || 'Unknown error occurred.';
+          alert(`Analysis Error: ${state.error_message}`);
+        } else if (state.status === 'cancelled') {
+          clearInterval(pollInterval);
+          pTitle.textContent = 'Job Cancelled';
+          pDetail.textContent = 'Analysis was stopped by the user.';
+        }
+      } catch (err) {
+        console.error('Job polling error:', err);
+      }
+    }
+
+    // Load and Render Results
+    async function loadResults() {
+      try {
+        const res = await fetch('/api/results');
+        if (!res.ok) return;
+        const data = await res.json();
+        currentResults = data.capsule;
+
+        // Render sections
+        renderFindingsTable();
+        renderAIRecommendations();
+        renderBlastRadiusTable();
+        renderVerificationTable();
+        renderDebtAndLimits();
+        renderCapsule(data);
+
+        // Switch to findings tab on completion
+        switchTab('tab-findings');
+      } catch (err) {
+        console.error('Failed to load results:', err);
+      }
+    }
+
+    function renderFindingsTable() {
+      if (!currentResults || !currentResults.findings) return;
+      const tbody = document.getElementById('findingsTableBody');
+      const sevFilter = document.getElementById('filterSeverity').value;
+      const catFilter = document.getElementById('filterCategory').value;
+
+      let list = currentResults.findings;
+      if (sevFilter !== 'ALL') list = list.filter(f => f.severity === sevFilter);
+      if (catFilter !== 'ALL') list = list.filter(f => f.category === catFilter);
+
+      document.getElementById('badgeFindingsCount').style.display = 'inline-block';
+      document.getElementById('badgeFindingsCount').textContent = currentResults.findings.length;
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No findings match selected filter.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(f => {
+        const ev = f.evidence && f.evidence[0] ? `${f.evidence[0].file_path}:${f.evidence[0].line_start || 1}` : 'N/A';
+        const evDetail = (f.evidence || []).map(e => `• ${e.file_path}:${e.line_start || 1} [${e.source_type}]: ${e.content_snippet || ''}`).join('\n');
+        return `
+          <tr style="cursor: pointer;" onclick="toggleEvidence('${f.id}')">
+            <td><strong>${f.id}</strong></td>
+            <td><code>${f.category}</code></td>
+            <td><span class="badge badge-${f.severity}">${f.severity.toUpperCase()}</span></td>
+            <td><strong>${f.package_name || '-'}</strong></td>
+            <td>${f.title}</td>
+            <td><code>${ev}</code></td>
+          </tr>
+          <tr id="ev-row-${f.id}" style="display: none; background: var(--surface-2);">
+            <td colspan="6">
+              <div style="padding: 8px 12px;">
+                <p><strong>Explanation:</strong> ${f.explanation}</p>
+                ${f.remediation_hint ? `<p style="margin-top: 4px; color: var(--primary);"><strong>Remediation:</strong> ${f.remediation_hint}</p>` : ''}
+                <div class="evidence-box">${evDetail || 'No detailed evidence snippet.'}</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function toggleEvidence(id) {
+      const row = document.getElementById(`ev-row-${id}`);
+      if (row) {
+        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+      }
+    }
+
+    function renderAIRecommendations() {
+      if (!currentResults) return;
+      const container = document.getElementById('aiRecommendationsContainer');
+      const recs = currentResults.recommendations || [];
+      const challenges = currentResults.recommendation_challenges || [];
+
+      if (!recs.length) {
+        container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No AI recommendations (Running in --no-ai mode or zero findings).</p>';
+        return;
+      }
+
+      container.innerHTML = recs.map(r => {
+        const ch = challenges.find(c => c.recommendation_id === r.id);
+        return `
+          <div class="challenge-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h4 style="font-size: 1rem;">${r.id}: ${r.title}</h4>
+              <div>
+                <span class="badge badge-ai">${r.suggested_action.toUpperCase()}</span>
+                <span class="badge badge-observed">${r.source}</span>
+              </div>
+            </div>
+            <p style="font-size: 0.9rem; margin-bottom: 10px;">${r.rationale}</p>
+            ${ch ? `
+              <div class="challenge-grid">
+                <div class="challenge-box">
+                  <h5>Assumptions</h5>
+                  <ul style="padding-left: 16px;">${ch.assumptions.map(a => `<li>${a}</li>`).join('')}</ul>
+                </div>
+                <div class="challenge-box">
+                  <h5>Counterarguments</h5>
+                  <ul style="padding-left: 16px;">${ch.counterarguments.map(c => `<li>${c}</li>`).join('')}</ul>
+                </div>
+                <div class="challenge-box">
+                  <h5>Disproving Evidence</h5>
+                  <p>${ch.disproving_evidence}</p>
+                </div>
+                <div class="challenge-box">
+                  <h5>Required Verification</h5>
+                  <p><code>${ch.verification_check_needed}</code></p>
+                  <p style="margin-top: 4px;">Status: <span class="badge badge-${ch.check_result.toLowerCase()}">${ch.check_result}</span></p>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderBlastRadiusTable() {
+      if (!currentResults || !currentResults.blast_radii) return;
+      const tbody = document.getElementById('impactTableBody');
+      const radii = currentResults.blast_radii;
+
+      if (!radii.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No impact radius data.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = radii.map(br => `
+        <tr>
+          <td><strong>${br.dependency_name}</strong></td>
+          <td><span class="badge badge-${br.risk_level}">${br.risk_level.toUpperCase()}</span></td>
+          <td>${br.importing_files.length ? br.importing_files.map(f => `<span class="badge badge-observed">${f}</span>`).join(' ') : '<em>None (Ghost)</em>'}</td>
+          <td>${br.affected_tests.length ? br.affected_tests.map(t => `<span class="badge badge-info">${t}</span>`).join(' ') : '<em>None</em>'}</td>
+          <td>${br.summary}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderVerificationTable() {
+      if (!currentResults || !currentResults.verifications) return;
+      const tbody = document.getElementById('verificationTableBody');
+      const vers = currentResults.verifications;
+
+      if (!vers.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No verification checks executed.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = vers.map(v => {
+        const statusBadge = v.status === 'verified' ? 'badge-verified' : v.status === 'failed' ? 'badge-failed' : 'badge-blocked';
+        return `
+          <tr>
+            <td><strong>${v.id}</strong></td>
+            <td><code>${v.target}</code></td>
+            <td><span class="badge ${statusBadge}">${v.status.toUpperCase()}</span></td>
+            <td><code>${v.exit_code !== null ? v.exit_code : 'BLOCKED'}</code></td>
+            <td>${v.duration_ms}ms</td>
+            <td>${v.sandbox_used ? '🛡️ Isolated' : 'Direct'}</td>
+          </tr>
+          ${v.notes || v.stderr ? `
+            <tr style="background: var(--surface-2);">
+              <td colspan="6" style="font-size: 0.8rem;">
+                ${v.notes ? `<strong>Notes:</strong> ${v.notes}<br>` : ''}
+                ${v.stderr ? `<div class="evidence-box">${v.stderr}</div>` : ''}
+              </td>
+            </tr>
+          ` : ''}
+        `;
+      }).join('');
+    }
+
+    function renderDebtAndLimits() {
+      if (!currentResults) return;
+      const debtBox = document.getElementById('debtContainer');
+      const debt = currentResults.verification_debt_details || [];
+
+      if (!debt.length) {
+        debtBox.innerHTML = '<p style="color: var(--success); font-weight: 600;">✅ Zero Verification Debt! All recommended actions have passed sandbox checks.</p>';
+        return;
+      }
+
+      debtBox.innerHTML = debt.map(d => `
+        <div class="challenge-card" style="border-left: 4px solid var(--warning);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <strong>${d.id}: ${d.title}</strong>
+            <span class="badge badge-blocked">${d.status}</span>
+          </div>
+          <p style="font-size: 0.85rem; margin-bottom: 6px;"><strong>Reason Unverified:</strong> ${d.unverified_reason}</p>
+          <p style="font-size: 0.85rem; color: var(--primary);"><strong>Maintainer Next Action:</strong> ${d.recommended_maintainer_action}</p>
+        </div>
+      `).join('');
+
+      const limitsList = document.getElementById('limitsList');
+      if (currentResults.limitations && currentResults.limitations.length) {
+        limitsList.innerHTML = currentResults.limitations.map(l => `<li>${l}</li>`).join('');
+      }
+    }
+
+    function renderCapsule(data) {
+      document.getElementById('capsuleMarkdownView').textContent = data.capsule_md || 'No capsule markdown available.';
+      document.getElementById('capsuleMetadata').innerHTML = `
+        <strong>Repository:</strong> ${data.capsule.metadata.repo_name} | 
+        <strong>Audit Hash:</strong> <code>${data.capsule.fingerprint.composite_hash.substring(0, 16)}...</code> | 
+        <strong>Export Location:</strong> <code>${data.reports_dir}</code>
+      `;
+    }
+
+    function downloadCapsule(fmt) {
+      window.open(`/api/capsule.${fmt}`, '_blank');
+    }
+
+    function copyCapsulePath() {
+      fetch('/api/results')
+        .then(r => r.json())
+        .then(d => {
+          if (d.reports_dir) {
+            navigator.clipboard.writeText(`${d.reports_dir}/capsule.md`);
+            alert(`Copied report path: ${d.reports_dir}/capsule.md`);
+          }
+        });
+    }
+  </script>
+</body>
+</html>
