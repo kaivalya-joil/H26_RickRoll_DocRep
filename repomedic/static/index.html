@@ -5,749 +5,855 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DocRep — Repository Resilience Workbench</title>
   <style>
+    /* ── Design Tokens ─────────────────────────────────────────────── */
     :root {
-      --bg: #fafafa;
-      --surface: #ffffff;
-      --surface-subtle: #f4f4f5;
-      --border: #e4e4e7;
-      --border-focus: #a1a1aa;
-      --text: #09090b;
-      --text-muted: #71717a;
-      --text-faint: #a1a1aa;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --primary-subtle: #eff6ff;
-      --success: #16a34a;
-      --success-subtle: #f0fdf4;
-      --warning: #d97706;
-      --warning-subtle: #fffbeb;
-      --danger: #dc2626;
-      --danger-subtle: #fef2f2;
-      --info: #0284c7;
-      --info-subtle: #f0f9ff;
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
-      --radius: 8px;
+      --bg:           #f6f6f7;
+      --surface:      #ffffff;
+      --surface-2:    #f0f0f2;
+      --border:       #e2e2e6;
+      --border-faint: #ebebee;
+      --text:         #0c0c0d;
+      --text-2:       #5a5a6e;
+      --text-3:       #9898a8;
+      --accent:       #1a1a2e;
+      --accent-hover: #16213e;
+      --blue:         #2563eb;
+      --blue-dim:     rgba(37,99,235,.10);
+      --green:        #16a34a;
+      --green-dim:    rgba(22,163,74,.10);
+      --amber:        #b45309;
+      --amber-dim:    rgba(180,83,9,.10);
+      --red:          #dc2626;
+      --red-dim:      rgba(220,38,38,.10);
+      --teal:         #0891b2;
+      --teal-dim:     rgba(8,145,178,.10);
+      --font:         -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+      --mono:         ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --r:            6px;
+      --r-lg:         10px;
     }
 
     [data-theme="dark"] {
-      --bg: #09090b;
-      --surface: #121215;
-      --surface-subtle: #18181b;
-      --border: #27272a;
-      --border-focus: #52525b;
-      --text: #f4f4f5;
-      --text-muted: #a1a1aa;
-      --text-faint: #71717a;
-      --primary: #3b82f6;
-      --primary-hover: #60a5fa;
-      --primary-subtle: rgba(59, 130, 246, 0.12);
-      --success: #22c55e;
-      --success-subtle: rgba(34, 197, 94, 0.12);
-      --warning: #f59e0b;
-      --warning-subtle: rgba(245, 158, 11, 0.12);
-      --danger: #ef4444;
-      --danger-subtle: rgba(239, 68, 68, 0.12);
-      --info: #38bdf8;
-      --info-subtle: rgba(56, 189, 248, 0.12);
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-      --shadow-md: 0 8px 16px -2px rgba(0, 0, 0, 0.5);
+      --bg:           #0c0c0d;
+      --surface:      #141415;
+      --surface-2:    #1c1c1e;
+      --border:       #252528;
+      --border-faint: #1e1e21;
+      --text:         #f0f0f2;
+      --text-2:       #8e8e9a;
+      --text-3:       #52525e;
+      --accent:       #f0f0f2;
+      --accent-hover: #d0d0da;
+      --blue:         #4f8ef7;
+      --blue-dim:     rgba(79,142,247,.12);
+      --green:        #22c55e;
+      --green-dim:    rgba(34,197,94,.12);
+      --amber:        #f59e0b;
+      --amber-dim:    rgba(245,158,11,.12);
+      --red:          #ef4444;
+      --red-dim:      rgba(239,68,68,.12);
+      --teal:         #22d3ee;
+      --teal-dim:     rgba(34,211,238,.12);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ── Reset ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: var(--font-sans);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.55;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.5;
       -webkit-font-smoothing: antialiased;
-      transition: background 0.15s ease, color 0.15s ease;
+      min-height: 100vh;
+      transition: background .2s, color .2s;
     }
 
-    /* Header */
+    /* ── Header ────────────────────────────────────────────────────── */
     header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
-      z-index: 50;
-      padding: 12px 28px;
+      z-index: 60;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
     }
-    .header-inner {
-      max-width: 1240px;
+    .nav {
+      max-width: 1280px;
       margin: 0 auto;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 56px;
+      gap: 24px;
     }
+
+    /* Brand */
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       text-decoration: none;
-      color: var(--text);
+      flex-shrink: 0;
     }
-    .brand-logo {
-      width: 32px;
-      height: 32px;
-      background: var(--primary);
-      color: #fff;
-      border-radius: 8px;
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      background: var(--text);
+      color: var(--surface);
+      border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 16px;
-      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: -.5px;
+      flex-shrink: 0;
     }
-    .brand-title {
-      font-size: 1.15rem;
+    .brand-name {
+      font-size: 15px;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: -.03em;
+      color: var(--text);
     }
-    .brand-badge {
-      font-size: 0.72rem;
-      font-weight: 600;
-      background: var(--surface-subtle);
-      color: var(--text-muted);
+    .brand-ver {
+      font-size: 11px;
+      color: var(--text-3);
+      font-weight: 500;
+      letter-spacing: .03em;
+    }
+
+    /* Status pills */
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 99px;
       border: 1px solid var(--border);
-      padding: 2px 8px;
-      border-radius: 9999px;
+      background: var(--surface-2);
+      color: var(--text-2);
+      white-space: nowrap;
     }
-    .status-pills {
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-ok   { background: var(--green); }
+    .dot-warn { background: var(--amber); }
+    .dot-err  { background: var(--red); }
+
+    /* Nav right actions */
+    .nav-actions {
       display: flex;
       align-items: center;
       gap: 8px;
-    }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.76rem;
-      font-weight: 500;
-      padding: 3px 10px;
-      border-radius: 9999px;
-      border: 1px solid var(--border);
-      background: var(--surface-subtle);
-      color: var(--text-muted);
-    }
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-    }
-    .dot-ok { background: var(--success); }
-    .dot-warn { background: var(--warning); }
-    .dot-err { background: var(--danger); }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-shrink: 0;
     }
 
-    /* Buttons */
+    /* ── Buttons ────────────────────────────────────────────────────── */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      font-size: 0.86rem;
+      gap: 5px;
+      font-family: var(--font);
+      font-size: 13px;
       font-weight: 500;
-      padding: 8px 16px;
-      border-radius: 6px;
+      padding: 7px 15px;
+      border-radius: var(--r);
       cursor: pointer;
       border: 1px solid transparent;
-      transition: all 0.15s ease;
       text-decoration: none;
-      font-family: var(--font-sans);
       white-space: nowrap;
+      transition: background .15s, border-color .15s, color .15s, opacity .15s;
     }
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
+    .btn:disabled { opacity: .45; pointer-events: none; }
+    .btn-solid {
+      background: var(--text);
+      color: var(--surface);
+      border-color: var(--text);
     }
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
-    .btn-secondary {
-      background: var(--surface);
-      color: var(--text);
+    .btn-solid:hover { opacity: .82; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-2);
       border-color: var(--border);
     }
-    .btn-secondary:hover {
-      background: var(--surface-subtle);
-      border-color: var(--border-focus);
-    }
-    .btn-sm {
-      padding: 5px 10px;
-      font-size: 0.8rem;
-    }
-    .btn:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
+    .btn-ghost:hover { background: var(--surface-2); color: var(--text); border-color: var(--text-3); }
+    .btn-sm { padding: 4px 11px; font-size: 12px; }
+    .btn-danger { color: var(--red); border-color: var(--red); background: var(--red-dim); }
+    .btn-danger:hover { background: var(--red); color: #fff; }
 
-    /* Dropdown */
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-    .dropdown-content {
+    /* ── Dropdown ───────────────────────────────────────────────────── */
+    .dropdown { position: relative; }
+    .dropdown-menu {
       display: none;
       position: absolute;
       right: 0;
-      top: 100%;
-      margin-top: 6px;
+      top: calc(100% + 6px);
+      min-width: 210px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-md);
-      min-width: 220px;
-      z-index: 100;
-      padding: 6px 0;
+      border-radius: var(--r-lg);
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      z-index: 200;
+      overflow: hidden;
+      padding: 4px;
     }
-    .dropdown:hover .dropdown-content,
-    .dropdown:focus-within .dropdown-content {
-      display: block;
-    }
+    .dropdown:hover .dropdown-menu,
+    .dropdown:focus-within .dropdown-menu { display: block; }
     .dropdown-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 9px 16px;
-      font-size: 0.84rem;
-      color: var(--text);
+      gap: 9px;
+      padding: 9px 12px;
+      font-size: 13px;
+      color: var(--text-2);
       text-decoration: none;
       cursor: pointer;
-      transition: background 0.1s;
+      border-radius: 4px;
+      transition: background .1s, color .1s;
     }
-    .dropdown-item:hover {
-      background: var(--surface-subtle);
-      color: var(--primary);
-    }
+    .dropdown-item:hover { background: var(--surface-2); color: var(--text); }
+    .dropdown-item-icon { width: 16px; text-align: center; font-size: 13px; }
 
-    /* Layout */
+    /* ── Main layout ────────────────────────────────────────────────── */
     main {
-      max-width: 1240px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 28px 24px 64px 24px;
+      padding: 32px 32px 80px;
     }
 
-    /* Control Workspace Panel */
-    .control-panel {
+    /* ── Section spacing ────────────────────────────────────────────── */
+    .section { margin-bottom: 28px; }
+
+    /* ── Control workspace ──────────────────────────────────────────── */
+    .workspace {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px 24px;
+      border-radius: var(--r-lg);
+      padding: 24px;
       margin-bottom: 24px;
-      box-shadow: var(--shadow-sm);
     }
-    .control-row {
+    .workspace-row {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
+      align-items: flex-end;
       gap: 16px;
+      flex-wrap: wrap;
     }
-    .repo-input-group {
+    .field {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      flex: 1;
-      min-width: 320px;
+      gap: 5px;
     }
-    .input-label {
-      font-size: 0.8rem;
+    .field-grow { flex: 1; min-width: 260px; }
+    .label {
+      font-size: 11px;
       font-weight: 600;
-      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: .07em;
+      color: var(--text-3);
     }
-    .input-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .input-text {
+    .input {
       width: 100%;
-      padding: 9px 14px;
-      font-size: 0.92rem;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: var(--mono);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--surface);
+      border-radius: var(--r);
+      background: var(--surface-2);
       color: var(--text);
-      font-family: var(--font-mono);
       outline: none;
-      transition: border-color 0.15s ease;
+      transition: border-color .15s;
     }
-    .input-text:focus {
-      border-color: var(--primary);
-    }
-    .toggle-group {
+    .input:focus { border-color: var(--blue); }
+
+    /* Toggles */
+    .toggle-row {
       display: flex;
       align-items: center;
       gap: 20px;
       flex-wrap: wrap;
     }
-    .toggle-item {
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+    .toggle input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+    .toggle strong { color: var(--text); font-weight: 600; }
+
+    .divider { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
+
+    .action-bar {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.86rem;
-      cursor: pointer;
-      user-select: none;
-    }
-    .toggle-item input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      accent-color: var(--primary);
-      cursor: pointer;
-    }
-    .action-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
 
-    /* Progress Banner */
-    .progress-banner {
-      background: var(--surface-subtle);
+    /* ── Progress ───────────────────────────────────────────────────── */
+    .progress-panel {
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 20px;
+      border-radius: var(--r-lg);
+      padding: 20px 24px;
       margin-bottom: 24px;
       display: none;
-      box-shadow: var(--shadow-sm);
     }
-    .progress-header {
+    .progress-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
     }
-    .progress-title {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .progress-bar-bg {
+    .progress-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .progress-track {
+      height: 3px;
       background: var(--border);
-      border-radius: 9999px;
-      height: 6px;
+      border-radius: 99px;
       overflow: hidden;
-      width: 100%;
       margin-bottom: 8px;
     }
-    .progress-bar-fill {
-      background: var(--primary);
+    .progress-fill {
       height: 100%;
+      background: var(--blue);
       width: 0%;
-      transition: width 0.3s ease;
+      border-radius: 99px;
+      transition: width .3s ease;
     }
-    .progress-detail {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
+    .progress-sub { font-size: 12px; color: var(--text-3); }
 
-    /* KPI Summary Cards */
-    .metrics-grid {
+    /* ── KPI Grid ───────────────────────────────────────────────────── */
+    .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
       margin-bottom: 28px;
     }
-    .metric-card {
+    .kpi {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
+      padding: 22px 24px;
     }
-    .metric-label {
-      font-size: 0.76rem;
+    .kpi-label {
+      font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin-bottom: 6px;
+      letter-spacing: .07em;
+      color: var(--text-3);
+      margin-bottom: 8px;
     }
-    .metric-value {
-      font-size: 1.6rem;
+    .kpi-value {
+      font-size: 26px;
       font-weight: 700;
+      letter-spacing: -.04em;
       color: var(--text);
-      letter-spacing: -0.03em;
       margin-bottom: 4px;
+      line-height: 1;
     }
-    .metric-detail {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
+    .kpi-sub { font-size: 12px; color: var(--text-3); }
 
-    /* Tabs Navigation */
-    .tabs {
+    /* ── Tab bar ────────────────────────────────────────────────────── */
+    .tab-bar {
       display: flex;
-      gap: 6px;
+      gap: 2px;
       border-bottom: 1px solid var(--border);
       margin-bottom: 24px;
       overflow-x: auto;
+      scrollbar-width: none;
     }
-    .tab-link {
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      padding: 10px 16px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-3);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      cursor: pointer;
       white-space: nowrap;
-      transition: color 0.15s ease;
+      transition: color .15s;
     }
-    .tab-link:hover {
-      color: var(--text);
-    }
-    .tab-link.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
+    .tab-btn:hover { color: var(--text-2); }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
 
-    .tab-pane {
-      display: none;
-    }
+    .tab-pane { display: none; }
     .tab-pane.active {
       display: block;
-      animation: fadeIn 0.15s ease-in;
+      animation: fadeUp .15s ease;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(2px); }
-      to {{ opacity: 1; transform: translateY(0); }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Toolbar */
+    /* Count badge in tab */
+    .count-chip {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-3);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+
+    /* ── Toolbar (filter row) ────────────────────────────────────────── */
     .toolbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
-    .search-box input {
-      width: 280px;
-      padding: 8px 14px;
+    .search-input {
+      padding: 7px 12px;
+      font-size: 13px;
       border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--surface);
+      border-radius: var(--r);
+      background: var(--surface-2);
       color: var(--text);
-      font-size: 0.84rem;
       outline: none;
+      width: 240px;
+      transition: border-color .15s;
     }
-    .search-box input:focus {
-      border-color: var(--primary);
-    }
-    .filter-select {
-      padding: 8px 12px;
+    .search-input:focus { border-color: var(--blue); }
+    .filter-row { display: flex; gap: 8px; }
+    .sel {
+      padding: 7px 10px;
+      font-size: 12px;
       border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--surface);
-      color: var(--text);
-      font-size: 0.82rem;
+      border-radius: var(--r);
+      background: var(--surface-2);
+      color: var(--text-2);
       outline: none;
+      cursor: pointer;
     }
 
-    /* Card List */
-    .card-list {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+    /* ── Finding cards ──────────────────────────────────────────────── */
+    .card-stack { display: flex; flex-direction: column; gap: 12px; }
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow-sm);
-      transition: border-color 0.15s ease;
+      border-radius: var(--r-lg);
+      padding: 20px 22px;
+      transition: border-color .15s;
     }
-    .card:hover {
-      border-color: var(--border-focus);
-    }
-    .card-header {
+    .card:hover { border-color: var(--text-3); }
+    .card-top {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 10px;
+      gap: 12px;
+      margin-bottom: 8px;
     }
-    .card-title-group {
+    .card-meta {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 7px;
       flex-wrap: wrap;
     }
+    .card-id {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-3);
+    }
     .card-title {
-      font-size: 1.05rem;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text);
     }
-    .card-id {
-      font-family: var(--font-mono);
-      font-size: 0.74rem;
-      color: var(--text-muted);
-    }
-    .card-desc {
-      font-size: 0.9rem;
-      color: var(--text);
+    .card-body {
+      font-size: 13px;
+      color: var(--text-2);
       line-height: 1.6;
       margin-bottom: 12px;
     }
 
-    /* Badges */
+    /* ── Badges ─────────────────────────────────────────────────────── */
     .badge {
       display: inline-flex;
       align-items: center;
       padding: 2px 8px;
-      border-radius: 9999px;
-      font-size: 0.72rem;
+      border-radius: 99px;
+      font-size: 11px;
       font-weight: 600;
+      letter-spacing: .02em;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
     }
-    .badge-critical { background: var(--danger-subtle); color: var(--danger); }
-    .badge-high { background: var(--danger-subtle); color: var(--danger); }
-    .badge-medium { background: var(--warning-subtle); color: var(--warning); }
-    .badge-low { background: var(--info-subtle); color: var(--info); }
-    .badge-category { background: var(--surface-subtle); color: var(--text-muted); border: 1px solid var(--border); }
-    .badge-verified { background: var(--success-subtle); color: var(--success); }
-
-    /* Evidence Block */
-    .evidence-block {
-      background: var(--surface-subtle);
+    .badge-critical, .badge-high { background: var(--red-dim);   color: var(--red);   }
+    .badge-medium               { background: var(--amber-dim); color: var(--amber); }
+    .badge-low                  { background: var(--teal-dim);  color: var(--teal);  }
+    .badge-category {
+      background: var(--surface-2);
+      color: var(--text-3);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 12px 14px;
-      margin: 10px 0;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
+      text-transform: none;
+      font-weight: 500;
+    }
+    .badge-ok  { background: var(--green-dim); color: var(--green); }
+    .badge-err { background: var(--red-dim);   color: var(--red);   }
+    .badge-warn { background: var(--amber-dim); color: var(--amber); }
+    .badge-info { background: var(--teal-dim);  color: var(--teal);  }
+
+    /* ── Evidence block ─────────────────────────────────────────────── */
+    .ev {
+      background: var(--surface-2);
+      border: 1px solid var(--border-faint);
+      border-radius: var(--r);
+      padding: 11px 14px;
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 12px;
       overflow-x: auto;
     }
-    .evidence-header {
+    .ev-header {
       display: flex;
       justify-content: space-between;
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 11px;
+      color: var(--text-3);
       margin-bottom: 6px;
-      font-family: var(--font-sans);
     }
 
-    /* Challenge Box */
-    .challenge-box {
-      background: var(--surface-subtle);
-      border-left: 3px solid var(--primary);
+    /* AI rec chip */
+    .rec-chip {
+      background: var(--blue-dim);
+      border-left: 2px solid var(--blue);
+      border-radius: 0 var(--r) var(--r) 0;
+      padding: 10px 14px;
+      margin-top: 12px;
+      font-size: 12.5px;
+      color: var(--text-2);
+      line-height: 1.55;
+    }
+    .rec-chip strong { color: var(--text); }
+    code {
+      font-family: var(--mono);
+      font-size: .9em;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+    }
+
+    /* ── Challenge cards ────────────────────────────────────────────── */
+    .challenge-section {
+      background: var(--surface-2);
+      border-radius: var(--r);
       padding: 14px 16px;
-      border-radius: 0 6px 6px 0;
-      margin-top: 14px;
-      font-size: 0.85rem;
+      margin-top: 12px;
+      font-size: 13px;
     }
-    .challenge-title {
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 4px;
+    .challenge-section h4 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-3);
+      margin-bottom: 6px;
     }
-    .challenge-item {
-      margin-bottom: 4px;
-      color: var(--text-muted);
+    .challenge-section ul {
+      padding-left: 18px;
+      color: var(--text-2);
+      line-height: 1.6;
     }
-    .challenge-item strong {
-      color: var(--text);
-    }
+    .challenge-section p { color: var(--text-2); margin-top: 4px; }
 
-    /* Tables */
-    .table-container {
+    /* ── Table ──────────────────────────────────────────────────────── */
+    .table-wrap {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: var(--r-lg);
       overflow-x: auto;
-      box-shadow: var(--shadow-sm);
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.86rem;
-    }
-    th, td {
-      padding: 14px 18px;
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th {
+      padding: 11px 18px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-3);
+      background: var(--surface-2);
       border-bottom: 1px solid var(--border);
     }
-    th {
-      background: var(--surface-subtle);
-      font-weight: 600;
-      color: var(--text-muted);
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    td {
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border-faint);
+      color: var(--text-2);
+      vertical-align: middle;
     }
-    tr:last-child td {
-      border-bottom: none;
+    td strong { color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface-2); }
+
+    /* ── Empty state ────────────────────────────────────────────────── */
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 56px 24px;
+      color: var(--text-3);
+      text-align: center;
+      gap: 6px;
     }
-    tr:hover td {
-      background: var(--surface-subtle);
+    .empty strong { font-size: 14px; color: var(--text-2); }
+    .empty p { font-size: 13px; }
+
+    /* ── Info callout ───────────────────────────────────────────────── */
+    .callout {
+      background: var(--blue-dim);
+      border: 1px solid rgba(79,142,247,.2);
+      border-radius: var(--r);
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .callout code { background: rgba(79,142,247,.15); border-color: rgba(79,142,247,.3); }
+
+    /* ── Capsule pre ────────────────────────────────────────────────── */
+    .capsule-pre {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      max-height: 580px;
+      overflow-y: auto;
+      color: var(--text-2);
+      line-height: 1.6;
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 48px 24px;
-      color: var(--text-muted);
+    /* ── Capsule tab header ─────────────────────────────────────────── */
+    .capsule-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    .empty-state p {
-      font-size: 0.88rem;
-      margin-top: 4px;
+    .capsule-title { font-size: 14px; font-weight: 600; color: var(--text); }
+
+    /* ── Debt card ──────────────────────────────────────────────────── */
+    .debt-card { margin-bottom: 0; }
+    .debt-card .card-top { margin-bottom: 6px; }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .nav { padding: 0 16px; }
+      main { padding: 20px 16px 64px; }
+      .status-row { display: none; }
+    }
+    @media (max-width: 600px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .workspace-row { flex-direction: column; align-items: stretch; }
+      .action-bar { flex-wrap: wrap; }
+      .toggle-row { flex-direction: column; align-items: flex-start; gap: 10px; }
     }
   </style>
 </head>
 <body>
 
+  <!-- ─── NAV ──────────────────────────────────────────────────────── -->
   <header>
-    <div class="header-inner">
-      <div class="brand">
-        <div class="brand-logo">D</div>
-        <div>
-          <div class="brand-title">DocRep</div>
-        </div>
-        <span class="brand-badge">v0.2.0</span>
-      </div>
+    <nav class="nav">
 
-      <div class="status-pills">
-        <div class="status-pill" id="pillOllama">
+      <!-- Brand -->
+      <a class="brand" href="#">
+        <div class="brand-mark">DR</div>
+        <span class="brand-name">DocRep</span>
+        <span class="brand-ver">v0.2</span>
+      </a>
+
+      <!-- System status pills -->
+      <div class="status-row">
+        <div class="pill" id="pillOllama">
           <span class="dot dot-warn" id="dotOllama"></span>
-          <span id="textOllama">Ollama: Checking...</span>
+          <span id="textOllama">Ollama</span>
         </div>
-        <div class="status-pill" id="pillModel">
+        <div class="pill" id="pillModel">
           <span class="dot dot-warn" id="dotModel"></span>
-          <span id="textModel">Model: Checking...</span>
+          <span id="textModel">Model</span>
         </div>
-        <div class="status-pill" id="pillHermes">
+        <div class="pill" id="pillHermes">
           <span class="dot dot-ok" id="dotHermes"></span>
           <span id="textHermes">Hermes</span>
         </div>
       </div>
 
-      <div class="header-actions">
+      <!-- Actions -->
+      <div class="nav-actions">
         <div class="dropdown">
-          <button class="btn btn-primary" id="btnDownloadReport">📥 Download Report ▾</button>
-          <div class="dropdown-content">
-            <a class="dropdown-item" href="/api/capsule.html" download="docrep_report.html">📄 Interactive Report (.html)</a>
-            <a class="dropdown-item" href="/api/capsule.md" download="capsule.md">📝 Markdown Capsule (.md)</a>
-            <a class="dropdown-item" href="/api/capsule.json" download="capsule.json">📦 Machine JSON (.json)</a>
+          <button class="btn btn-ghost btn-sm" id="btnDownloadReport">
+            ↓ Download Report
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="/api/capsule.html" download="docrep_report.html">
+              <span class="dropdown-item-icon">⬡</span> Interactive HTML
+            </a>
+            <a class="dropdown-item" href="/api/capsule.md" download="capsule.md">
+              <span class="dropdown-item-icon">≡</span> Markdown Capsule
+            </a>
+            <a class="dropdown-item" href="/api/capsule.json" download="capsule.json">
+              <span class="dropdown-item-icon">{}</span> Machine JSON
+            </a>
           </div>
         </div>
-        <button class="btn btn-secondary" onclick="toggleTheme()" id="themeBtn">🌓 Theme</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">◐</button>
       </div>
-    </div>
+
+    </nav>
   </header>
 
+  <!-- ─── MAIN ─────────────────────────────────────────────────────── -->
   <main>
-    <!-- Runner Workspace Bar -->
-    <div class="control-panel">
-      <div class="control-row">
-        <div class="repo-input-group">
-          <label class="input-label" for="repoPathInput">Target Repository Path</label>
-          <div class="input-wrapper">
-            <input type="text" id="repoPathInput" class="input-text" value="target_repo/linkwatch" placeholder="target_repo/linkwatch">
-            <button class="btn btn-secondary btn-sm" onclick="setRepo('target_repo/linkwatch')">LinkWatch</button>
+
+    <!-- Control workspace -->
+    <div class="workspace">
+      <div class="workspace-row">
+
+        <!-- Repo path -->
+        <div class="field field-grow">
+          <span class="label">Target Repository</span>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text" id="repoPathInput" class="input"
+              value="target_repo/linkwatch" placeholder="/path/to/repo">
+            <button class="btn btn-ghost btn-sm" onclick="setRepo('target_repo/linkwatch')">LinkWatch</button>
           </div>
         </div>
 
-        <div class="toggle-group">
-          <label class="toggle-item">
-            <input type="checkbox" id="deepToggle">
-            <span><strong>Deep AI Mode</strong> (Analyze all findings)</span>
-          </label>
-          <label class="toggle-item">
-            <input type="checkbox" id="noAiToggle">
-            <span><strong>Deterministic Only</strong> (Skip AI)</span>
-          </label>
+        <div class="divider"></div>
+
+        <!-- Toggles -->
+        <div class="field">
+          <span class="label">Options</span>
+          <div class="toggle-row">
+            <label class="toggle">
+              <input type="checkbox" id="deepToggle">
+              <strong>Deep AI</strong>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="noAiToggle">
+              <strong>No AI</strong>
+            </label>
+          </div>
         </div>
 
-        <div class="action-group">
-          <button class="btn btn-primary" id="btnRunAudit" onclick="startAudit('run')">🚀 Run Full Audit</button>
-          <button class="btn btn-secondary btn-sm" onclick="startAudit('scan')">Scan Only</button>
-          <button class="btn btn-secondary btn-sm" onclick="startAudit('verify')">Verify Only</button>
+        <div class="divider"></div>
+
+        <!-- Actions -->
+        <div class="field">
+          <span class="label">Run</span>
+          <div class="action-bar">
+            <button class="btn btn-solid" id="btnRunAudit" onclick="startAudit('run')">
+              Run Full Audit
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="startAudit('scan')">Scan</button>
+            <button class="btn btn-ghost btn-sm" onclick="startAudit('verify')">Verify</button>
+          </div>
         </div>
+
       </div>
     </div>
 
-    <!-- Live Progress Banner -->
-    <div class="progress-banner" id="progressSection">
-      <div class="progress-header">
-        <span class="progress-title" id="progressStepTitle">Running resilience audit...</span>
-        <button class="btn btn-secondary btn-sm" onclick="cancelJob()" style="color:var(--danger); border-color:var(--danger)">Cancel</button>
+    <!-- Progress panel -->
+    <div class="progress-panel" id="progressSection">
+      <div class="progress-top">
+        <span class="progress-label" id="progressStepTitle">Running resilience audit…</span>
+        <button class="btn btn-sm btn-danger" onclick="cancelJob()">Cancel</button>
       </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressBarFill"></div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressBarFill"></div>
       </div>
-      <div class="progress-detail" id="progressDetail">Starting background process...</div>
+      <div class="progress-sub" id="progressDetail">Initialising background worker…</div>
     </div>
 
-    <!-- Metrics Grid -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Target Repository</div>
-        <div class="metric-value" id="kpiRepoName">linkwatch</div>
-        <div class="metric-detail" id="kpiRepoDetail">Loading repository inventory...</div>
+    <!-- KPI bar -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">Repository</div>
+        <div class="kpi-value" id="kpiRepoName">linkwatch</div>
+        <div class="kpi-sub" id="kpiRepoDetail">Loading…</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Identified Findings</div>
-        <div class="metric-value" id="kpiFindingsCount">-</div>
-        <div class="metric-detail" id="kpiFindingsDetail">Run audit to evaluate resilience</div>
+      <div class="kpi">
+        <div class="kpi-label">Findings</div>
+        <div class="kpi-value" id="kpiFindingsCount">—</div>
+        <div class="kpi-sub" id="kpiFindingsDetail">Run audit to evaluate</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Sandbox Verification</div>
-        <div class="metric-value" id="kpiVerifCount" style="color:var(--success)">-</div>
-        <div class="metric-detail" id="kpiVerifDetail">Allow-listed checks in isolated sandbox</div>
+      <div class="kpi">
+        <div class="kpi-label">Sandbox Checks</div>
+        <div class="kpi-value" id="kpiVerifCount" style="color:var(--green)">—</div>
+        <div class="kpi-sub" id="kpiVerifDetail">Isolated sandbox runner</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Verification Debt</div>
-        <div class="metric-value" id="kpiDebtCount">-</div>
-        <div class="metric-detail" id="kpiDebtDetail">Items requiring maintainer test</div>
+      <div class="kpi">
+        <div class="kpi-label">Verification Debt</div>
+        <div class="kpi-value" id="kpiDebtCount">—</div>
+        <div class="kpi-sub" id="kpiDebtDetail">Items requiring maintainer test</div>
       </div>
     </div>
 
-    <!-- Tabs Navigation -->
-    <div class="tabs" role="tablist">
-      <button class="tab-link active" onclick="switchTab('tab-findings')">🔍 Findings <span id="tabCountFindings" class="badge badge-category" style="margin-left:4px;">0</span></button>
-      <button class="tab-link" onclick="switchTab('tab-ai')">🤖 AI Suggestions & Challenges</button>
-      <button class="tab-link" onclick="switchTab('tab-blast')">💥 Blast Radius</button>
-      <button class="tab-link" onclick="switchTab('tab-verif')">🧪 Sandbox Verification</button>
-      <button class="tab-link" onclick="switchTab('tab-debt')">⚠️ Debt & Limitations</button>
-      <button class="tab-link" onclick="switchTab('tab-capsule')">📜 Exit Capsule</button>
+    <!-- Tab navigation -->
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" onclick="switchTab('tab-findings')">
+        Findings <span class="count-chip" id="tabCountFindings">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-ai')">AI Challenges</button>
+      <button class="tab-btn" onclick="switchTab('tab-blast')">Blast Radius</button>
+      <button class="tab-btn" onclick="switchTab('tab-verif')">Verification</button>
+      <button class="tab-btn" onclick="switchTab('tab-debt')">Debt &amp; Limits</button>
+      <button class="tab-btn" onclick="switchTab('tab-capsule')">Exit Capsule</button>
     </div>
 
-    <!-- TAB 1: FINDINGS -->
+    <!-- ── TAB 1: FINDINGS ─────────────────────────────────────────── -->
     <div class="tab-pane active" id="tab-findings">
       <div class="toolbar">
-        <div class="search-box">
-          <input type="text" id="findingSearch" placeholder="Search findings, packages, files..." oninput="filterFindings()">
-        </div>
-        <div style="display:flex; gap:8px;">
-          <select id="severityFilter" class="filter-select" onchange="filterFindings()">
+        <input type="text" class="search-input" id="findingSearch"
+          placeholder="Search packages, files, categories…" oninput="filterFindings()">
+        <div class="filter-row">
+          <select id="severityFilter" class="sel" onchange="filterFindings()">
             <option value="ALL">All Severities</option>
             <option value="critical">Critical</option>
             <option value="high">High</option>
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </select>
-          <select id="categoryFilter" class="filter-select" onchange="filterFindings()">
+          <select id="categoryFilter" class="sel" onchange="filterFindings()">
             <option value="ALL">All Categories</option>
             <option value="migration_tripwire">Migration Tripwires</option>
             <option value="ghost_dependency">Ghost Dependencies</option>
@@ -756,95 +862,93 @@
           </select>
         </div>
       </div>
-      <div class="card-list" id="findingsList">
-        <div class="empty-state">
-          <strong>No findings loaded yet</strong>
-          <p>Click "Run Full Audit" to scan AST and evaluate resilience rules.</p>
+      <div class="card-stack" id="findingsList">
+        <div class="empty">
+          <strong>No findings loaded</strong>
+          <p>Click <em>Run Full Audit</em> to scan AST and evaluate resilience rules.</p>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: AI CHALLENGES -->
+    <!-- ── TAB 2: AI CHALLENGES ───────────────────────────────────── -->
     <div class="tab-pane" id="tab-ai">
-      <div class="card" style="margin-bottom: 20px; background: var(--surface-subtle);">
-        <div style="font-size: 0.88rem; color: var(--text-muted);">
-          🤖 <strong>Model Identity:</strong> <code id="modelIdentityLabel">qwen2.5-coder:1.5b via Ollama</code>
-          <br>All recommendations are probabilistic suggestions challenged by assumptions, counterarguments, and sandbox tests.
-        </div>
+      <div class="callout">
+        <strong>Model:</strong> <code id="modelIdentityLabel">qwen2.5-coder:1.5b via Ollama</code>
+        &nbsp;—&nbsp;All recommendations are probabilistic AI suggestions, challenged by assumptions,
+        counterarguments and sandbox checks.
       </div>
-      <div class="card-list" id="challengesList">
-        <div class="empty-state">
-          <strong>No AI recommendations loaded yet</strong>
+      <div class="card-stack" id="challengesList">
+        <div class="empty">
+          <strong>No AI recommendations loaded</strong>
+          <p>Run Full Audit with AI enabled.</p>
         </div>
       </div>
     </div>
 
-    <!-- TAB 3: BLAST RADIUS -->
+    <!-- ── TAB 3: BLAST RADIUS ────────────────────────────────────── -->
     <div class="tab-pane" id="tab-blast">
-      <div class="table-container">
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Dependency</th>
               <th>Risk</th>
-              <th>Direct Importing Modules</th>
-              <th>Impacted Test Suites</th>
-              <th>Blast Summary</th>
+              <th>Direct Imports</th>
+              <th>Affected Tests</th>
+              <th>Summary</th>
             </tr>
           </thead>
           <tbody id="blastTableBody">
-            <tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:32px;">No blast radius data available.</td></tr>
+            <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-3)">No blast radius data available.</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- TAB 4: VERIFICATION -->
+    <!-- ── TAB 4: VERIFICATION ────────────────────────────────────── -->
     <div class="tab-pane" id="tab-verif">
-      <div class="table-container">
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Check ID</th>
               <th>Target</th>
               <th>Status</th>
-              <th style="text-align:center;">Exit Code</th>
-              <th style="text-align:right;">Duration</th>
-              <th style="text-align:center;">Sandbox</th>
+              <th style="text-align:center">Exit Code</th>
+              <th style="text-align:right">Duration</th>
+              <th style="text-align:center">Sandbox</th>
             </tr>
           </thead>
           <tbody id="verifTableBody">
-            <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">No verification results available.</td></tr>
+            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">No verification results available.</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- TAB 5: DEBT & LIMITS -->
+    <!-- ── TAB 5: DEBT & LIMITS ───────────────────────────────────── -->
     <div class="tab-pane" id="tab-debt">
-      <div class="card-list" id="debtList" style="margin-bottom: 24px;"></div>
+      <div class="card-stack" id="debtList" style="margin-bottom:20px;"></div>
       <div class="card">
-        <div style="font-size: 1.05rem; font-weight: 600; margin-bottom: 12px;">Scanner & Environment Limitations</div>
-        <ul id="limitsList" style="padding-left: 20px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.7;">
+        <div style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:12px; text-transform:uppercase; letter-spacing:.06em; font-size:11px; color:var(--text-3);">Scanner &amp; Environment Limitations</div>
+        <ul id="limitsList" style="padding-left:18px; font-size:13px; color:var(--text-2); line-height:1.8;">
           <li>Static AST parsing cannot detect dynamic runtime imports (e.g. <code>importlib.import_module</code>).</li>
           <li>Closed-source transitive dependencies require clean container testing.</li>
-          <li>AI recommendations are probabilistic suggestions and must be verified against repository tests before adoption.</li>
+          <li>AI recommendations are probabilistic suggestions — verify against repository tests before adoption.</li>
         </ul>
       </div>
     </div>
 
-    <!-- TAB 6: CAPSULE PREVIEW -->
+    <!-- ── TAB 6: EXIT CAPSULE ────────────────────────────────────── -->
     <div class="tab-pane" id="tab-capsule">
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <strong>Dependency Exit Capsule (Proof-Carrying Artifact)</strong>
-          <div style="display:flex; gap:8px;">
-            <button class="btn btn-secondary btn-sm" onclick="copyMarkdown()">📋 Copy Markdown</button>
-            <a class="btn btn-primary btn-sm" href="/api/capsule.md" download="capsule.md">📥 Download .md</a>
-          </div>
+      <div class="capsule-bar">
+        <span class="capsule-title">Dependency Exit Capsule — Proof-Carrying Artifact</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost btn-sm" onclick="copyMarkdown()">Copy Markdown</button>
+          <a class="btn btn-solid btn-sm" href="/api/capsule.md" download="capsule.md">↓ Download .md</a>
         </div>
-        <pre class="evidence-block" id="capsuleMdView" style="max-height: 600px; overflow-y:auto;">Run analysis to generate and inspect capsule.md here.</pre>
       </div>
+      <pre class="capsule-pre" id="capsuleMdView">Run analysis to generate and inspect capsule.md here.</pre>
     </div>
 
   </main>
@@ -869,11 +973,11 @@
 
     // Tab Switching
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
       const target = document.getElementById(tabId);
       if (target) target.classList.add('active');
-      const activeBtn = Array.from(document.querySelectorAll('.tab-link')).find(b => b.getAttribute('onclick')?.includes(tabId));
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
       if (activeBtn) activeBtn.classList.add('active');
     }
 
@@ -892,10 +996,10 @@
         const txtO = document.getElementById('textOllama');
         if (data.ollama.running) {
           dotO.className = 'dot dot-ok';
-          txtO.textContent = 'Ollama: Online';
+          txtO.textContent = 'Ollama';
         } else {
           dotO.className = 'dot dot-err';
-          txtO.textContent = 'Ollama: Offline';
+          txtO.textContent = 'Ollama Offline';
         }
 
         // Model
@@ -903,10 +1007,10 @@
         const txtM = document.getElementById('textModel');
         if (data.model.ready) {
           dotM.className = 'dot dot-ok';
-          txtM.textContent = `Model: ${data.model.name}`;
+          txtM.textContent = data.model.name;
         } else {
           dotM.className = 'dot dot-warn';
-          txtM.textContent = `Model: Missing`;
+          txtM.textContent = 'Model Missing';
         }
 
         // Hermes
@@ -914,10 +1018,10 @@
         const txtH = document.getElementById('textHermes');
         if (data.hermes.found) {
           dotH.className = 'dot dot-ok';
-          txtH.textContent = `Hermes: ${data.hermes.version || 'Found'}`;
+          txtH.textContent = `Hermes ${data.hermes.version || ''}`.trim();
         } else {
           dotH.className = 'dot dot-ok';
-          txtH.textContent = 'Hermes: Ready';
+          txtH.textContent = 'Hermes';
         }
       } catch (e) {
         console.error('Failed to load status', e);
@@ -939,8 +1043,8 @@
       document.getElementById('btnRunAudit').disabled = true;
       document.getElementById('progressSection').style.display = 'block';
       document.getElementById('progressBarFill').style.width = '10%';
-      document.getElementById('progressStepTitle').textContent = 'Starting resilience audit...';
-      document.getElementById('progressDetail').textContent = 'Initializing background worker...';
+      document.getElementById('progressStepTitle').textContent = 'Starting resilience audit…';
+      document.getElementById('progressDetail').textContent = 'Initialising background worker…';
 
       try {
         const res = await fetch('/api/run', {
@@ -973,7 +1077,7 @@
 
           document.getElementById('progressBarFill').style.width = `${job.progress_pct}%`;
           document.getElementById('progressStepTitle').textContent = job.current_step;
-          document.getElementById('progressDetail').textContent = `Status: ${job.status.toUpperCase()} (${job.progress_pct}%)`;
+          document.getElementById('progressDetail').textContent = `${job.status.toUpperCase()} — ${job.progress_pct}%`;
 
           if (job.status === 'completed') {
             clearInterval(pollInterval);
@@ -1030,42 +1134,32 @@
 
       // Update KPIs
       document.getElementById('kpiRepoName').textContent = meta.repo_name || 'linkwatch';
-      document.getElementById('kpiRepoDetail').textContent = `${meta.source_files_count || 10} files • ${meta.manifests_found?.length || 2} manifests • Python ${meta.python_version_detected || '3.12'}`;
+      document.getElementById('kpiRepoDetail').textContent = `${meta.source_files_count || 10} files · ${meta.manifests_found?.length || 2} manifests · Python ${meta.python_version_detected || '3.12'}`;
 
       document.getElementById('kpiFindingsCount').textContent = findings.length;
       document.getElementById('tabCountFindings').textContent = findings.length;
       const crit = findings.filter(f => f.severity === 'critical').length;
       const high = findings.filter(f => f.severity === 'high').length;
-      const med = findings.filter(f => f.severity === 'medium').length;
-      document.getElementById('kpiFindingsDetail').innerHTML = `<span style="color:var(--danger)">${crit} Crit</span> • <span style="color:var(--warning)">${high} High</span> • <span style="color:var(--warning)">${med} Med</span>`;
+      const med  = findings.filter(f => f.severity === 'medium').length;
+      document.getElementById('kpiFindingsDetail').innerHTML = `<span style="color:var(--red)">${crit} Critical</span> &nbsp;${high} High &nbsp;${med} Medium`;
 
       const pass = verifs.filter(v => v.status === 'verified').length;
-      document.getElementById('kpiVerifCount').textContent = `${pass} / ${verifs.length} Passed`;
-      document.getElementById('kpiVerifDetail').textContent = '100% allow-listed checks verified';
+      document.getElementById('kpiVerifCount').textContent = `${pass} / ${verifs.length}`;
+      document.getElementById('kpiVerifDetail').textContent = 'Passed in isolated sandbox';
 
       document.getElementById('kpiDebtCount').textContent = debt.length;
-      document.getElementById('kpiDebtDetail').textContent = debt.length === 0 ? '0 unverified items remaining' : 'Items require maintainer test';
+      document.getElementById('kpiDebtDetail').textContent = debt.length === 0 ? 'No unverified items' : 'Items require maintainer test';
 
       if (cap.model_info?.model_name) {
         document.getElementById('modelIdentityLabel').textContent = `${cap.model_info.model_name} via ${cap.model_info.mode}`;
       }
 
-      // Render Findings
       renderFindingsList(findings, cap.recommendations || []);
-
-      // Render Challenges
       renderChallenges(challenges);
-
-      // Render Blast Radius
       renderBlast(blast);
-
-      // Render Verifications
       renderVerifications(verifs);
-
-      // Render Debt & Limits
       renderDebtAndLimits(debt, limits);
 
-      // Render Capsule Markdown View
       if (data.capsule_md) {
         document.getElementById('capsuleMdView').textContent = data.capsule_md;
       }
@@ -1074,7 +1168,7 @@
     function renderFindingsList(findings, recs) {
       const container = document.getElementById('findingsList');
       if (!findings.length) {
-        container.innerHTML = '<div class="empty-state">No findings identified.</div>';
+        container.innerHTML = '<div class="empty"><strong>No findings identified.</strong></div>';
         return;
       }
 
@@ -1085,9 +1179,9 @@
         if (f.evidence && f.evidence.length > 0) {
           f.evidence.forEach(ev => {
             evHtml += `
-            <div class="evidence-block">
-              <div class="evidence-header">
-                <span><strong>File:</strong> ${ev.file_path} (Line ${ev.line_start || 1})</span>
+            <div class="ev">
+              <div class="ev-header">
+                <span><strong>${ev.file_path}</strong> · Line ${ev.line_start || 1}</span>
                 <span>${ev.source_type}</span>
               </div>
               <pre><code>${escapeHtml(ev.content_snippet || '')}</code></pre>
@@ -1098,24 +1192,24 @@
         let recHtml = '';
         if (matchingRec) {
           recHtml = `
-          <div style="margin-top: 12px; font-size: 0.85rem; color: var(--text-muted); background: var(--surface-subtle); padding: 12px 14px; border-radius: 6px;">
-            <strong style="color:var(--text)">AI Recommended Action:</strong> ${matchingRec.suggested_action.toUpperCase()}
-            ${matchingRec.target_replacement ? `➔ <code>${matchingRec.target_replacement}</code>` : ''}
-            <div style="margin-top: 4px;">${escapeHtml(matchingRec.rationale)}</div>
+          <div class="rec-chip">
+            <strong>AI Action:</strong> ${matchingRec.suggested_action.toUpperCase()}
+            ${matchingRec.target_replacement ? `→ <code>${matchingRec.target_replacement}</code>` : ''}
+            <div style="margin-top:4px; color:var(--text-3);">${escapeHtml(matchingRec.rationale)}</div>
           </div>`;
         }
 
         html += `
         <div class="card finding-item" data-severity="${f.severity}" data-category="${f.category}" data-search="${escapeHtml(f.package_name || '')} ${escapeHtml(f.title)} ${escapeHtml(f.explanation)}">
-          <div class="card-header">
-            <div class="card-title-group">
+          <div class="card-top">
+            <div class="card-meta">
               <span class="badge badge-${f.severity}">${f.severity}</span>
               <span class="badge badge-category">${f.category}</span>
               <span class="card-title">${escapeHtml(f.package_name || f.id)}: ${escapeHtml(f.title)}</span>
             </div>
             <span class="card-id">${f.id}</span>
           </div>
-          <div class="card-desc">${escapeHtml(f.explanation)}</div>
+          <div class="card-body">${escapeHtml(f.explanation)}</div>
           ${evHtml}
           ${recHtml}
         </div>`;
@@ -1127,7 +1221,7 @@
     function renderChallenges(challenges) {
       const container = document.getElementById('challengesList');
       if (!challenges.length) {
-        container.innerHTML = '<div class="empty-state">No recommendation challenges available.</div>';
+        container.innerHTML = '<div class="empty"><strong>No recommendation challenges available.</strong></div>';
         return;
       }
 
@@ -1135,28 +1229,34 @@
       challenges.forEach(ch => {
         const assLi = (ch.assumptions || []).map(a => `<li>${escapeHtml(a)}</li>`).join('');
         const cntLi = (ch.counterarguments || []).map(c => `<li>${escapeHtml(c)}</li>`).join('');
-        const statusColor = ch.check_result === 'VERIFIED' ? 'var(--success)' : 'var(--warning)';
+        const statusBadge = ch.check_result === 'VERIFIED'
+          ? '<span class="badge badge-ok">Verified</span>'
+          : '<span class="badge badge-warn">' + escapeHtml(ch.check_result) + '</span>';
 
         html += `
         <div class="card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <span class="card-title">Recommendation Challenge for ${escapeHtml(ch.package_name)}</span>
+          <div class="card-top">
+            <div class="card-meta">
+              <span class="card-title">Challenge — ${escapeHtml(ch.package_name)}</span>
               <span class="badge badge-category">${ch.recommendation_id}</span>
             </div>
-            <span class="badge" style="background:var(--surface-subtle); color:${statusColor}; border:1px solid var(--border);">
-              Check: ${escapeHtml(ch.check_result)}
-            </span>
+            ${statusBadge}
           </div>
-          <div class="challenge-box">
-            <div class="challenge-title">Assumptions Made</div>
-            <ul style="padding-left: 20px; margin-bottom: 8px;">${assLi || '<li>Standard API parity assumed.</li>'}</ul>
-
-            <div class="challenge-title">Counterarguments & Risks</div>
-            <ul style="padding-left: 20px; margin-bottom: 8px;">${cntLi || '<li>Migration requires testing.</li>'}</ul>
-
-            <div class="challenge-item"><strong>Disproving Evidence:</strong> ${escapeHtml(ch.disproving_evidence)}</div>
-            <div class="challenge-item"><strong>Required Verification Check:</strong> <code>${escapeHtml(ch.verification_check_needed)}</code></div>
+          <div class="challenge-section">
+            <h4>Assumptions</h4>
+            <ul>${assLi || '<li>Standard API parity assumed.</li>'}</ul>
+          </div>
+          <div class="challenge-section">
+            <h4>Counterarguments &amp; Risks</h4>
+            <ul>${cntLi || '<li>Migration requires testing.</li>'}</ul>
+          </div>
+          <div class="challenge-section">
+            <h4>Disproving Evidence</h4>
+            <p>${escapeHtml(ch.disproving_evidence)}</p>
+          </div>
+          <div class="challenge-section">
+            <h4>Required Check</h4>
+            <p><code>${escapeHtml(ch.verification_check_needed)}</code></p>
           </div>
         </div>`;
       });
@@ -1166,16 +1266,17 @@
     function renderBlast(blast) {
       const tbody = document.getElementById('blastTableBody');
       if (!blast.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:32px;">No blast radius data.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-3)">No blast radius data.</td></tr>';
         return;
       }
 
       tbody.innerHTML = blast.map(b => {
-        const riskColor = b.risk_level === 'critical' || b.risk_level === 'high' ? 'var(--danger)' : (b.risk_level === 'medium' ? 'var(--warning)' : 'var(--info)');
+        const lvl = b.risk_level;
+        const cls = (lvl === 'critical' || lvl === 'high') ? 'badge-err' : (lvl === 'medium' ? 'badge-warn' : 'badge-info');
         return `
         <tr>
           <td><strong>${escapeHtml(b.dependency_name)}</strong></td>
-          <td><span class="badge" style="background:var(--surface-subtle); color:${riskColor}; border:1px solid var(--border);">${b.risk_level}</span></td>
+          <td><span class="badge ${cls}">${b.risk_level}</span></td>
           <td>${escapeHtml((b.importing_files || []).join(', ') || 'None (Ghost)')}</td>
           <td>${escapeHtml((b.affected_tests || []).join(', ') || 'None')}</td>
           <td>${escapeHtml(b.summary)}</td>
@@ -1186,20 +1287,20 @@
     function renderVerifications(verifs) {
       const tbody = document.getElementById('verifTableBody');
       if (!verifs.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">No verification results.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">No verification results.</td></tr>';
         return;
       }
 
       tbody.innerHTML = verifs.map(v => {
-        const statColor = v.status === 'verified' ? 'var(--success)' : (v.status === 'failed' ? 'var(--danger)' : 'var(--warning)');
+        const cls = v.status === 'verified' ? 'badge-ok' : (v.status === 'failed' ? 'badge-err' : 'badge-warn');
         return `
         <tr>
           <td><code>${escapeHtml(v.id)}</code></td>
           <td>${escapeHtml(v.target)}</td>
-          <td><span class="badge" style="background:var(--surface-subtle); color:${statColor}; border:1px solid var(--border);">${v.status.toUpperCase()}</span></td>
-          <td style="text-align:center;">${v.exit_code !== null ? v.exit_code : '-'}</td>
+          <td><span class="badge ${cls}">${v.status.toUpperCase()}</span></td>
+          <td style="text-align:center;">${v.exit_code !== null ? v.exit_code : '—'}</td>
           <td style="text-align:right;">${v.duration_ms}ms</td>
-          <td style="text-align:center;">${v.sandbox_used ? 'YES' : 'NO'}</td>
+          <td style="text-align:center;">${v.sandbox_used ? 'Yes' : 'No'}</td>
         </tr>`;
       }).join('');
     }
@@ -1208,19 +1309,20 @@
       const debtContainer = document.getElementById('debtList');
       if (!debt.length) {
         debtContainer.innerHTML = `
-        <div class="card" style="text-align:center; color:var(--success); padding:32px;">
-          <strong>✓ Zero Verification Debt</strong>
-          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">All recommendations were fully proven in an isolated sandbox runner.</p>
+        <div class="card" style="text-align:center; padding:32px;">
+          <div style="font-size:22px; color:var(--green); margin-bottom:6px;">✓</div>
+          <strong style="color:var(--green)">Zero Verification Debt</strong>
+          <p style="font-size:13px; color:var(--text-3); margin-top:4px;">All recommendations proven in isolated sandbox.</p>
         </div>`;
       } else {
         debtContainer.innerHTML = debt.map(d => `
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">⚠️ ${escapeHtml(d.id)}: ${escapeHtml(d.title)}</span>
-            <span class="badge badge-high">${escapeHtml(d.status)}</span>
+        <div class="card debt-card">
+          <div class="card-top">
+            <span class="card-title">${escapeHtml(d.id)}: ${escapeHtml(d.title)}</span>
+            <span class="badge badge-warn">${escapeHtml(d.status)}</span>
           </div>
-          <p style="font-size:0.9rem; margin-bottom:8px;"><strong>Reason Unverified:</strong> ${escapeHtml(d.unverified_reason)}</p>
-          <p style="font-size:0.85rem; color:var(--text-muted);"><strong>Recommended Maintainer Next Action:</strong> ${escapeHtml(d.recommended_maintainer_action)}</p>
+          <p style="font-size:13px; margin-bottom:6px; color:var(--text-2);"><strong>Why unverified:</strong> ${escapeHtml(d.unverified_reason)}</p>
+          <p style="font-size:12.5px; color:var(--text-3);"><strong>Next action:</strong> ${escapeHtml(d.recommended_maintainer_action)}</p>
         </div>`).join('');
       }
 
@@ -1230,16 +1332,16 @@
     }
 
     function filterFindings() {
-      const q = document.getElementById('findingSearch').value.toLowerCase();
+      const q   = document.getElementById('findingSearch').value.toLowerCase();
       const sev = document.getElementById('severityFilter').value;
       const cat = document.getElementById('categoryFilter').value;
 
       document.querySelectorAll('.finding-item').forEach(el => {
-        const elSev = el.getAttribute('data-severity');
-        const elCat = el.getAttribute('data-category');
+        const elSev    = el.getAttribute('data-severity');
+        const elCat    = el.getAttribute('data-category');
         const elSearch = el.getAttribute('data-search').toLowerCase();
 
-        const matchQ = !q || elSearch.includes(q);
+        const matchQ   = !q || elSearch.includes(q);
         const matchSev = sev === 'ALL' || elSev === sev;
         const matchCat = cat === 'ALL' || elCat === cat;
 
