@@ -51,7 +51,34 @@ class AnalysisJobManager:
         self.last_results: Optional[Dict[str, Any]] = None
         self.last_capsule_md = ""
         self.last_capsule_json = ""
-        self.last_reports_dir = ""
+        self.last_capsule_html = ""
+        self.last_reports_dir = "reports"
+        self._try_preload_existing()
+
+    def _try_preload_existing(self):
+        reports_dir = Path("reports")
+        json_p = reports_dir / "capsule.json"
+        md_p = reports_dir / "capsule.md"
+        html_p = reports_dir / "index.html"
+        if json_p.exists():
+            try:
+                self.last_capsule_json = json_p.read_text(encoding="utf-8")
+                self.last_results = json.loads(self.last_capsule_json)
+                self.status = JobState.COMPLETED
+                self.progress_pct = 100
+                self.current_step = "Loaded existing report from reports/capsule.json"
+            except Exception:
+                pass
+        if md_p.exists():
+            try:
+                self.last_capsule_md = md_p.read_text(encoding="utf-8")
+            except Exception:
+                pass
+        if html_p.exists():
+            try:
+                self.last_capsule_html = html_p.read_text(encoding="utf-8")
+            except Exception:
+                pass
 
     def get_state(self) -> Dict[str, Any]:
         with self.lock:
@@ -203,6 +230,8 @@ class AnalysisJobManager:
             out_dir_path = Path(output_dir).resolve()
             json_p = generator.export_json(out_dir_path / "capsule.json")
             md_p = generator.export_markdown(out_dir_path / "capsule.md")
+            html_p = generator.export_html(out_dir_path / "index.html")
+            generator.export_html(out_dir_path / "capsule.html")
 
             capsule = generator.build_capsule()
             capsule_dump = capsule.model_dump()
@@ -211,6 +240,7 @@ class AnalysisJobManager:
                 self.last_results = capsule_dump
                 self.last_capsule_md = md_p.read_text(encoding="utf-8")
                 self.last_capsule_json = json_p.read_text(encoding="utf-8")
+                self.last_capsule_html = html_p.read_text(encoding="utf-8")
                 self.last_reports_dir = str(out_dir_path)
                 self.progress_pct = 100
                 self.current_step = "Analysis complete! Capsule generated."
@@ -269,6 +299,8 @@ class DocRepHTTPRequestHandler(BaseHTTPRequestHandler):
             self._handle_download_capsule_md()
         elif path == "/api/capsule.json":
             self._handle_download_capsule_json()
+        elif path in ("/api/capsule.html", "/reports/index.html"):
+            self._handle_download_capsule_html()
         else:
             self.send_error(404, "Not Found")
 
@@ -375,6 +407,25 @@ class DocRepHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Disposition", 'attachment; filename="capsule.json"')
+        self.send_header("Content-Length", str(len(content)))
+        self.end_headers()
+        self.wfile.write(content)
+
+    def _handle_download_capsule_html(self):
+        with job_manager.lock:
+            h = job_manager.last_capsule_html
+        if not h:
+            # Check if reports/index.html exists on disk
+            rep_p = Path("reports/index.html")
+            if rep_p.exists():
+                h = rep_p.read_text(encoding="utf-8")
+        if not h:
+            self.send_error(404, "Capsule HTML not generated yet.")
+            return
+        content = h.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Disposition", 'attachment; filename="docrep_report.html"')
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()
         self.wfile.write(content)

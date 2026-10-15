@@ -84,6 +84,7 @@ class AIRecommendation(BaseModel):
     status: FindingStatus = Field(default=FindingStatus.RECOMMENDED)
     source: str = Field(default="hermes_agent", description="Generator source (hermes_agent or deterministic_fallback)")
     model_name: Optional[str] = Field(None, description="Name of local model used")
+    challenge_data: Optional[Dict[str, Any]] = Field(default=None, description="Structured challenge and verification metadata from model")
 
 
 class VerificationResult(BaseModel):

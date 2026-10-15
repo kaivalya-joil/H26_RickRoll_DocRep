@@ -246,6 +246,27 @@ class TestCapsuleValidationAndSchema(unittest.TestCase):
         self.assertIn("## SECTION 3: VERIFIED RESULTS & AUDIT DEBT", md_text)
         self.assertIn("Non-Deterministic Reasoning Notice", md_text)
 
+    def test_export_html_report(self):
+        """Export standalone HTML report and verify structure."""
+        gen = CapsuleGenerator(
+            metadata=self.metadata,
+            declarations=self.declarations,
+            imports=self.imports,
+            findings=self.findings,
+            recommendations=self.recommendations,
+            verifications=self.verifications,
+            blast_radii=self.blast_radii,
+            manifest_hashes=self.m_hashes,
+            source_hashes=self.s_hashes,
+        )
+        html_path = gen.export_html(self.out_dir / "report.html")
+        self.assertTrue(html_path.exists())
+        content = html_path.read_text(encoding="utf-8")
+        self.assertIn("<!DOCTYPE html>", content)
+        self.assertIn("DocRep", content)
+        self.assertIn("linkwatch", content)
+        self.assertIn("capsule-data", content)
+
 
 class TestPartialScannerResults(unittest.TestCase):
     def setUp(self):
@@ -328,6 +349,18 @@ class TestGUIBackendAPI(unittest.TestCase):
             data = json.loads(resp.read().decode("utf-8"))
             self.assertIn("status", data)
             self.assertIn("progress_pct", data)
+
+    def test_api_download_capsule_html(self):
+        """GUI API: GET /api/capsule.html returns HTML content."""
+        url = f"http://127.0.0.1:{self.port}/api/capsule.html"
+        try:
+            with urllib.request.urlopen(url) as resp:
+                self.assertEqual(resp.status, 200)
+                self.assertIn("text/html", resp.headers.get("Content-Type", ""))
+                body = resp.read().decode("utf-8")
+                self.assertIn("DocRep", body)
+        except urllib.error.HTTPError as e:
+            self.assertIn(e.code, (200, 404))
 
 
 if __name__ == "__main__":

@@ -132,22 +132,24 @@ DocRep includes a zero-dependency web interface powered exclusively by Python's 
 - **No npm, no webpack, no external CDN calls.**
 - **Binds strictly to `127.0.0.1`** (picks a free port dynamically).
 - **Light & Dark mode** with automatic OS preference detection and manual toggle.
-- **Responsive design** on laptop, tablet, and mobile viewports.
+- **Responsive minimalist design** with spacious cards, expandable evidence drawers, and clean Linear-style visual hierarchy.
 - **Real-time background polling** for progress and status.
+- **Instant Report Downloads:** 1-Click download of standalone `.html`, `.md`, and `.json` reports.
 
 ### Launch Options
-- **CLI:** `python -m repomedic.cli gui`
-- **Windows Double-Click:** Double-click `start.bat`
+- **1-Click Windows Launcher:** Simply double-click `DocRep.bat` or `start.bat` in Windows Explorer (automatically uses local `.venv` if available).
+- **Standalone Offline HTML Report:** Double-click `reports/index.html` in Windows Explorer to open the complete interactive report in any browser without needing Python or Ollama running!
+- **CLI Command:** `python -m repomedic.cli gui`
 - **macOS / Linux:** Run `./start.sh`
 
 ### Interface Tabs
-1. **Home:** Repository path box, LinkWatch selector, Run Full Analysis button, Fast/Deep toggle, AI on/off switch, live status badges.
-2. **Findings:** Sortable and filterable table by severity/category. Click any row to expand the concrete evidence box with exact file paths and line numbers.
-3. **AI Suggestions:** AI recommendations with badges (`[OBSERVED]`, `[AI SUGGESTION]`, `[VERIFIED]`, `[CACHED]`), plus Recommendation Challenges detailing assumptions, counterarguments, and disproving evidence.
-4. **Change Blast-Radius:** Interactive map showing which source modules directly import each dependency and which test suites are impacted.
-5. **Verification:** Real sandbox execution results with PASS, FAILED, and BLOCKED status badges, exit codes, durations, and stderr logs.
+1. **Control Panel & KPIs:** Repository path selector, Deep AI mode switch, Deterministic-only switch, "Run Full Audit" button, and 4 KPI overview cards (Target Repo, Findings, Sandbox Proof, Verification Debt).
+2. **Findings:** Spacious, filterable finding cards by severity/category and keyword search. Expandable evidence drawers showing exact file paths, line numbers, and AST context.
+3. **AI Suggestions & Challenges:** Verified local Qwen 2.5 Coder 1.5b recommendations, plus Recommendation Challenges detailing assumptions, counterarguments, disproving conditions, and verification checks needed.
+4. **Change Blast-Radius:** Graph map showing which source modules directly import each dependency and which test suites are impacted.
+5. **Sandbox Verification:** Real sandbox execution results with PASS, FAILED, and BLOCKED status badges, exit codes, durations, and sandbox isolation status.
 6. **Debt & Limits:** Verification Debt ledger highlighting unverified recommendations and maintainer next actions.
-7. **Capsule Export:** Formatted Markdown preview, download buttons for `capsule.md` and `capsule.json`, and one-click path copier.
+7. **Capsule Export:** Interactive preview, download buttons for `.html`, `.md`, and `.json`, and 1-click clipboard copy.
 
 ---
 
@@ -190,8 +192,8 @@ Run the full pytest suite:
 python -m pytest -q
 ```
 
-**Results:** `95 passed, 1 skipped in 11.01s` (100% of runnable tests passing).
-- Tests cover: Schema validation, JSON roundtrip agreement, missing evidence references, failed/inconclusive checks preservation, malformed model JSON handling, partial scanner outputs, model metadata preservation, section separation, and GUI HTTP server endpoints.
+**Results:** `97 passed, 1 skipped in 9.92s` (100% of runnable tests passing).
+- Tests cover: Schema validation, JSON roundtrip agreement, standalone offline HTML report generation, missing evidence references, failed/inconclusive checks preservation, malformed model JSON handling, partial scanner outputs, model metadata preservation, section separation, and GUI HTTP server endpoints.
 
 ---
 

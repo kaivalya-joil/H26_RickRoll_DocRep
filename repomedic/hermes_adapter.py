@@ -10,14 +10,14 @@ import subprocess
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from .models import AIRecommendation, Finding, FindingStatus
 from .verifier import ALLOWED_SAFE_CHECKS
 
 
 class StructuredRecommendationSchema(BaseModel):
-    """Strict schema required from Hermes/Ollama model."""
+    """Strict schema required from Hermes/Ollama model with robust coercion."""
     problem_explanation: str = Field(..., description="Explanation of the root issue")
     evidence_significance: str = Field(..., description="Why the concrete evidence matters")
     impact_and_uncertainty: str = Field(..., description="Scope of impact and unknowns")
@@ -28,6 +28,42 @@ class StructuredRecommendationSchema(BaseModel):
     counterarguments: List[str] = Field(default_factory=list, description="Plausible counterarguments")
     disproving_evidence: str = Field(..., description="Evidence that would disprove this recommendation")
     open_compatibility_concerns: List[str] = Field(default_factory=list)
+
+    @field_validator("assumptions", "counterarguments", "open_compatibility_concerns", mode="before")
+    @classmethod
+    def coerce_list(cls, v: Any) -> List[str]:
+        if isinstance(v, list):
+            return [str(x).strip() for x in v if str(x).strip()]
+        if isinstance(v, str):
+            lines = [line.strip().lstrip("-*•123456789. ") for line in v.splitlines() if line.strip()]
+            return lines if lines else [v.strip()]
+        return []
+
+    @field_validator("disproving_evidence", mode="before")
+    @classmethod
+    def coerce_str(cls, v: Any) -> str:
+        if isinstance(v, list):
+            return "; ".join(str(x).strip() for x in v if str(x).strip())
+        return str(v) if v is not None else ""
+
+    @field_validator("verification_check_name", mode="before")
+    @classmethod
+    def coerce_check_name(cls, v: Any) -> str:
+        s = str(v).strip().lower()
+        if s in ALLOWED_SAFE_CHECKS:
+            return s
+        for key in ALLOWED_SAFE_CHECKS:
+            if key in s:
+                return key
+        if "manifest" in s or "req" in s or "pyproject" in s or "six" in s:
+            return "manifest_consistency"
+        if "test" in s or "pytest" in s:
+            return "test_suite_run"
+        if "config" in s or "toml" in s:
+            return "config_validation"
+        if "version" in s or "constraint" in s or "pydantic" in s:
+            return "version_constraint_compatibility"
+        return "import_checks"
 
 
 class AIAnalysisResult(BaseModel):
@@ -42,7 +78,7 @@ class AIAnalysisResult(BaseModel):
 
 
 CACHE_DIR = Path(".repomedic_cache")
-PROMPT_VERSION = "v2_structured"
+PROMPT_VERSION = "v3_structured"
 
 
 class HermesAdapter:
@@ -98,8 +134,43 @@ class HermesAdapter:
         """Generate evidence-backed recommendations for identified findings."""
         recommendations: List[AIRecommendation] = []
         counter = 1
+        warm = self.warmup_check()
+        use_ai = (warm.get("status") == "ok")
+
         for finding in findings:
-            rec = self._generate_single_recommendation(finding, counter)
+            rec = None
+            if use_ai:
+                snippet = ""
+                if finding.evidence and finding.evidence[0].content_snippet:
+                    snippet = finding.evidence[0].content_snippet
+                else:
+                    snippet = finding.explanation
+
+                try:
+                    analysis = self.analyze_finding(finding, snippet)
+                    if analysis.status in ("success", "cached") and analysis.structured_data:
+                        sd = analysis.structured_data
+                        src = f"local_ollama_qwen{'_cached' if analysis.is_cached else ''}"
+                        rec = AIRecommendation(
+                            id=f"REC-{counter:03d}",
+                            finding_id=finding.id,
+                            package_name=finding.package_name or "unknown",
+                            title=f"Recommended action for {finding.package_name or finding.id}: {sd.recommended_action[:60]}",
+                            rationale=f"{sd.problem_explanation} {sd.evidence_significance}",
+                            suggested_action=sd.recommended_action,
+                            target_replacement=sd.suggested_migration,
+                            confidence=0.95,
+                            status=FindingStatus.RECOMMENDED,
+                            source=src,
+                            model_name=self.model_name,
+                            challenge_data=sd.model_dump(),
+                        )
+                except Exception:
+                    rec = None
+
+            if rec is None:
+                rec = self._generate_single_recommendation(finding, counter)
+
             if rec:
                 recommendations.append(rec)
                 counter += 1
@@ -314,17 +385,19 @@ class HermesAdapter:
     def _call_model(self, prompt: str) -> tuple[Optional[str], Optional[str]]:
         import requests
         try:
+            payload = {
+                "model": self.model_name,
+                "messages": [
+                    {"role": "system", "content": "You are a software maintenance agent. Output only valid JSON matching the exact requested schema."},
+                    {"role": "user", "content": prompt},
+                ],
+                "response_format": {"type": "json_object"},
+                "temperature": 0.0,
+                "max_tokens": 512,
+            }
             resp = requests.post(
                 f"{self.endpoint}/v1/chat/completions",
-                json={
-                    "model": self.model_name,
-                    "messages": [
-                        {"role": "system", "content": "You are a software maintenance agent. Output only valid JSON matching the exact requested schema."},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "temperature": 0.0,
-                    "max_tokens": 512,
-                },
+                json=payload,
                 timeout=self.timeout,
             )
             if resp.status_code != 200:

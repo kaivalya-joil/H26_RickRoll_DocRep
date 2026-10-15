@@ -321,10 +321,13 @@ def capsule(
     out_dir_path = Path(output_dir).resolve()
     json_path = generator.export_json(out_dir_path / "capsule.json")
     md_path = generator.export_markdown(out_dir_path / "capsule.md")
+    html_path = generator.export_html(out_dir_path / "index.html")
+    generator.export_html(out_dir_path / "capsule.html")
 
     console.print(f"[bold green][OK] Capsule generated successfully![/bold green]")
-    console.print(f"  * JSON Capsule:     [cyan]{json_path}[/cyan]")
-    console.print(f"  * Markdown Capsule: [cyan]{md_path}[/cyan]")
+    console.print(f"  * Standalone HTML Report: [cyan]{html_path}[/cyan]")
+    console.print(f"  * JSON Capsule:          [cyan]{json_path}[/cyan]")
+    console.print(f"  * Markdown Capsule:      [cyan]{md_path}[/cyan]")
 
 
 @cli.command()
@@ -405,10 +408,13 @@ def run(
     out_dir_path = Path(output_dir).resolve()
     json_path = generator.export_json(out_dir_path / "capsule.json")
     md_path = generator.export_markdown(out_dir_path / "capsule.md")
+    html_path = generator.export_html(out_dir_path / "index.html")
+    generator.export_html(out_dir_path / "capsule.html")
 
     console.print(f"\n[bold green][OK] Full Pipeline Complete![/bold green]")
-    console.print(f"  * JSON Capsule:     [cyan]{json_path}[/cyan]")
-    console.print(f"  * Markdown Capsule: [cyan]{md_path}[/cyan]\n")
+    console.print(f"  * Standalone HTML Report: [cyan]{html_path}[/cyan]")
+    console.print(f"  * JSON Capsule:          [cyan]{json_path}[/cyan]")
+    console.print(f"  * Markdown Capsule:      [cyan]{md_path}[/cyan]\n")
 
 
 @cli.command()

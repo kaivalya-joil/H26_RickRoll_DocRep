@@ -77,6 +77,27 @@ class CapsuleGenerator:
             pkg = rec.package_name
             ev_list = [f"{ev.file_path}:{ev.line_start or 1}" for ev in (finding.evidence if finding else [])]
 
+            if rec.challenge_data:
+                cd = rec.challenge_data
+                check_needed = cd.get("verification_check_name", "test_suite_run")
+                ran = check_needed in verified_targets
+                status = verified_targets.get(check_needed, "NOT_RUN")
+                challenges.append(
+                    RecommendationChallenge(
+                        recommendation_id=rec.id,
+                        finding_id=rec.finding_id,
+                        package_name=pkg,
+                        assumptions=cd.get("assumptions") or ["Standard library or modern package provides API parity"],
+                        supporting_evidence=ev_list or ([finding.explanation] if finding else [f"Package {pkg} issue"]),
+                        counterarguments=cd.get("counterarguments") or ["Migration may require code changes and testing"],
+                        disproving_evidence=cd.get("disproving_evidence") or "Verification check failure.",
+                        verification_check_needed=f"Execute {check_needed} in isolated sandbox.",
+                        check_ran=ran,
+                        check_result=status,
+                    )
+                )
+                continue
+
             if pkg == "six":
                 check_name = "test_suite_run"
                 ran = check_name in verified_targets or "manifest_consistency" in verified_targets
@@ -358,6 +379,16 @@ class CapsuleGenerator:
 
         md = self._render_markdown(capsule)
         out_p.write_text(md, encoding="utf-8")
+        return out_p
+
+    def export_html(self, output_path: Path | str) -> Path:
+        """Export capsule as a standalone, zero-dependency interactive HTML report."""
+        from .html_report import render_html_report
+        capsule = self.build_capsule()
+        out_p = Path(output_path).resolve()
+        out_p.parent.mkdir(parents=True, exist_ok=True)
+        html_content = render_html_report(capsule)
+        out_p.write_text(html_content, encoding="utf-8")
         return out_p
 
     def _render_markdown(self, c: DependencyExitCapsule) -> str:
