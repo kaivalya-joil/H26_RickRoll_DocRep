@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "DocRep: Evidence-backed repository maintenance workbench for dependency resilience"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "DocRep Team" }]
 dependencies = [
     "click>=8.0.0",
@@ -20,6 +20,11 @@ dependencies = [
 [project.scripts]
 docrep = "repomedic.cli:cli"
 repomedic = "repomedic.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["repomedic*", "docrep*"]
+exclude = ["target_repo*", "tests*", "reports*", "skills*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
