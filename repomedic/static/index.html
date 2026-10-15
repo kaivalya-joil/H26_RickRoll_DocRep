@@ -822,7 +822,7 @@
             <span class="field-label">Target Repository</span>
             <div class="field-row">
               <input type="text" id="repoPathInput" class="input-text"
-                value="target_repo/linkwatch" placeholder="/path/to/repo">
+                value="" placeholder="Enter target repository path (e.g. target_repo/linkwatch)" oninput="handleRepoInputChange()">
               <button class="btn btn-outline btn-sm"
                 onclick="setRepo('target_repo/linkwatch')">LinkWatch</button>
             </div>
@@ -877,13 +877,13 @@
       <div class="kpi-strip">
         <div class="kpi">
           <div class="kpi-lbl">Repository</div>
-          <div class="kpi-val" id="kpiRepoName">linkwatch</div>
-          <div class="kpi-sub" id="kpiRepoDetail">Loading…</div>
+          <div class="kpi-val" id="kpiRepoName">—</div>
+          <div class="kpi-sub" id="kpiRepoDetail">No repository selected</div>
         </div>
         <div class="kpi">
           <div class="kpi-lbl">Findings</div>
           <div class="kpi-val" id="kpiFindingsCount">—</div>
-          <div class="kpi-sub" id="kpiFindingsDetail">Run audit to evaluate</div>
+          <div class="kpi-sub" id="kpiFindingsDetail">Enter repository and run audit</div>
         </div>
         <div class="kpi">
           <div class="kpi-lbl">Sandbox Checks</div>
@@ -1056,7 +1056,41 @@
       if (b) b.classList.add('active');
     }
 
-    function setRepo(p) { document.getElementById('repoPathInput').value = p; }
+    function setRepo(p) {
+      document.getElementById('repoPathInput').value = p;
+      handleRepoInputChange();
+    }
+
+    function clearResults() {
+      document.getElementById('kpiRepoName').textContent = '—';
+      document.getElementById('kpiRepoDetail').textContent = 'No repository selected';
+      document.getElementById('kpiFindingsCount').textContent = '—';
+      document.getElementById('kpiFindingsDetail').textContent = 'Enter repository and run audit';
+      document.getElementById('kpiVerifCount').textContent = '—';
+      document.getElementById('kpiVerifDetail').textContent = 'Isolated sandbox runner';
+      document.getElementById('kpiDebtCount').textContent = '—';
+      document.getElementById('kpiDebtDetail').textContent = 'Items requiring review';
+      document.getElementById('tabCountFindings').textContent = '0';
+      document.getElementById('findingsList').innerHTML =
+        '<div class="empty"><strong>No repository selected</strong><p>Enter repository path and click <em>Run Full Audit</em>.</p></div>';
+      document.getElementById('challengesList').innerHTML =
+        '<div class="empty"><strong>No AI recommendations</strong><p>Enter repository path and run audit.</p></div>';
+      document.getElementById('blastTableBody').innerHTML =
+        '<tr><td colspan="5" class="empty" style="padding:40px">No blast radius data available.</td></tr>';
+      document.getElementById('verifTableBody').innerHTML =
+        '<tr><td colspan="6" class="empty" style="padding:40px">No verification results available.</td></tr>';
+      document.getElementById('debtList').innerHTML = '';
+      document.getElementById('capsuleMdView').textContent = 'Enter a repository and run analysis to view capsule.';
+    }
+
+    function handleRepoInputChange() {
+      const p = document.getElementById('repoPathInput').value.trim();
+      if (!p) {
+        clearResults();
+      } else if (currentResults) {
+        renderResults(currentResults);
+      }
+    }
 
     /* Status */
     async function refreshStatus() {
@@ -1154,11 +1188,21 @@
         if (!r.ok) return;
         const d = await r.json();
         currentResults = d;
+        const currentRepo = document.getElementById('repoPathInput').value.trim();
+        if (!currentRepo) {
+          clearResults();
+          return;
+        }
         renderResults(d);
       } catch (e) { console.error('Fetch results error', e); }
     }
 
     function renderResults(data) {
+      const repoInput = document.getElementById('repoPathInput').value.trim();
+      if (!repoInput) {
+        clearResults();
+        return;
+      }
       const cap    = data.capsule; if (!cap) return;
       const meta   = cap.metadata || {};
       const findings    = cap.findings || [];
