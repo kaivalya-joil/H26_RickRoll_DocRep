@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "repomedic"
+version = "0.1.0"
+description = "AI-assisted repository maintenance workbench for dependency resilience"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "RepoMedic Hackathon Team" }]
+dependencies = [
+    "click>=8.0.0",
+    "rich>=12.0.0",
+    "pydantic>=2.0.0",
+    "jinja2>=3.0.0",
+]
+
+[project.scripts]
+repomedic = "repomedic.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["repomedic*"]
+exclude = ["target_repo*", "tests*"]
